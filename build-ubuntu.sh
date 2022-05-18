@@ -1,0 +1,1 @@
+gcc -o testOS ./src/**.c ./src/**.h -lpthread

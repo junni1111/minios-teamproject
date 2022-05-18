@@ -2,5 +2,5 @@
 
 void printtest()
 {
-    printf("123132123");
+    printf("123132123\n");
 }

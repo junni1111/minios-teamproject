@@ -1,0 +1,1 @@
+gcc -c ./src/**.c ./src/**.h -o test.o
