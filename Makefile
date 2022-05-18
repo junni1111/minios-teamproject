@@ -5,7 +5,7 @@ main.o : ./src/main.c
 	gcc -c -o main.o ./src/main.c
 test.o : ./src/test.c
 	gcc -c -o test.o ./src/test.c
-clean:
+obj:
 	rm *.o
-all:
+clean:
 	rm *.o testOS
