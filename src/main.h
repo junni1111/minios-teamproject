@@ -161,9 +161,6 @@ char *Pop(Stack *dirStack);
 void GetMonth(int i);
 void GetWeekday(int i);
 
-// test.c
-void printtest();
-
 // global variable
 DirectoryTree *Linux;
 Stack *dStack;

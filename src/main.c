@@ -6,7 +6,5 @@
 
 int main()
 {
-    printtest();
     return 0;
-    //heelloo
 }
