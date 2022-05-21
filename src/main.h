@@ -86,18 +86,18 @@ time_t ltime;
 struct tm *today;
 
 // instruction.c
-int mkdir(DirectoryTree *dirTree, char *cmd);
-int rm(DirectoryTree *dirTree, char *cmd);
-int cd(DirectoryTree *dirTree, char *cmd);
-int pwd(DirectoryTree *dirTree, Stack *dirStack, char *cmd);
-int ls(DirectoryTree *dirTree, char *cmd);
-int cat(DirectoryTree *dirTree, char *cmd);
-int chmod(DirectoryTree *dirTree, char *cmd);
-int chown_(DirectoryTree *dirTree, char *cmd);
-int find_(DirectoryTree *dirTree, char *cmd);
-void instruction(DirectoryTree *dirTree, char *cmd);
+int mkdir(DirectoryTree *p_directoryTree, char *command);
+int rm(DirectoryTree *p_directoryTree, char *command);
+int cd(DirectoryTree *p_directoryTree, char *command);
+int pwd(DirectoryTree *p_directoryTree, Stack *p_directoryStack, char *command);
+int ls(DirectoryTree *p_directoryTree, char *command);
+int cat(DirectoryTree *p_directoryTree, char *command);
+int chmod(DirectoryTree *p_directoryTree, char *command);
+int chown_(DirectoryTree *p_directoryTree, char *command);
+int find_(DirectoryTree *p_directoryTree, char *command);
+void instruction(DirectoryTree *p_directoryTree, char *command);
 void print_start();
-void print_head(DirectoryTree *dirTree, Stack *dirStack);
+void print_head(DirectoryTree *p_directoryTree, Stack *p_directoryStack);
 
 // directory.c
 // utility
@@ -105,39 +105,39 @@ int mode_to_permission(DirectoryNode *dirNode);
 void print_permission(DirectoryNode *dirNode);
 void destory_node(DirectoryNode *dirNode);
 void destory_directory(DirectoryNode *dirNode);
-DirectoryNode *is_exist_directory(DirectoryTree *dirTree, char *dirName, char type);
-char *get_directory(char *dirPath);
+DirectoryNode *is_exist_directory(DirectoryTree *p_directoryTree, char *directoryName, char type);
+char *get_directory(char *directoryPath);
 
 // save & load
-void get_directory_path(DirectoryTree *dirTree, DirectoryNode *dirNode, Stack *dirStack);
-void write_directory_node(DirectoryTree *dirTree, DirectoryNode *dirNode, Stack *dirStack);
-void save_directory(DirectoryTree *dirTree, Stack *dirStack);
-int read_directory_node(DirectoryTree *dirTree, char *tmp);
+void get_directory_path(DirectoryTree *p_directoryTree, DirectoryNode *dirNode, Stack *p_directoryStack);
+void write_directory_node(DirectoryTree *p_directoryTree, DirectoryNode *dirNode, Stack *p_directoryStack);
+void save_directory(DirectoryTree *p_directoryTree, Stack *p_directoryStack);
+int read_directory_node(DirectoryTree *p_directoryTree, char *tmp);
 DirectoryTree *load_directory();
 
 // mkdir
 DirectoryTree *initialize_directory_tree();
-int make_directory(DirectoryTree *dirTree, char *dirName, char type);
+int make_directory(DirectoryTree *p_directoryTree, char *directoryName, char type);
 // rm
-int remove_directory(DirectoryTree *dirTree, char *dirName);
+int remove_directory(DirectoryTree *p_directoryTree, char *directoryName);
 // cd
-int move_current_tree(DirectoryTree *dirTree, char *dirPath);
-int move_directory_path(DirectoryTree *dirTree, char *dirPath);
+int move_current_tree(DirectoryTree *p_directoryTree, char *directoryPath);
+int move_directory_path(DirectoryTree *p_directoryTree, char *directoryPath);
 // pwd
-int print_directory_path(DirectoryTree *dirTree, Stack *dirStack);
+int print_directory_path(DirectoryTree *p_directoryTree, Stack *p_directoryStack);
 // ls
-int list_directory(DirectoryTree *dirTree, int a, int l);
+int list_directory(DirectoryTree *p_directoryTree, int a, int l);
 // cat
-int concatenate(DirectoryTree *dirTree, char *fName, int o);
+int concatenate(DirectoryTree *p_directoryTree, char *fName, int o);
 // chmod
-int change_mode(DirectoryTree *dirTree, int mode, char *dirName);
+int change_mode(DirectoryTree *p_directoryTree, int mode, char *directoryName);
 void change_all_mode(DirectoryNode *dirNode, int mode);
 // chown
-int change_owner(DirectoryTree *dirTree, char *userName, char *dirName);
+int change_owner(DirectoryTree *p_directoryTree, char *userName, char *directoryName);
 void change_all_owner(DirectoryNode *dirNode, char *userName);
 // find
-int read_directory(DirectoryTree *dirTree, char *tmp, char *dirName, int o);
-void find_directory(DirectoryTree *dirTree, char *dirName, int o);
+int read_directory(DirectoryTree *p_directoryTree, char *tmp, char *directoryName, int o);
+void find_directory(DirectoryTree *p_directoryTree, char *directoryName, int o);
 
 // user.c
 UserList *initialize_user();
@@ -149,13 +149,13 @@ UserNode *is_exist_user(UserList *userList, char *userName);
 char *get_UID(DirectoryNode *dirNode);
 char *get_GID(DirectoryNode *dirNode);
 int is_node_has_permission(DirectoryNode *dirNode, char o);
-void login(UserList *userList, DirectoryTree *dirTree);
+void login(UserList *userList, DirectoryTree *p_directoryTree);
 
 // stack.c
 Stack *initialize_stack();
-int is_empty(Stack *dirStack);
-int push(Stack *dirStack, char *dirName);
-char *pop(Stack *dirStack);
+int is_empty(Stack *p_directoryStack);
+int push(Stack *p_directoryStack, char *directoryName);
+char *pop(Stack *p_directoryStack);
 
 // time.c
 void get_month(int i);

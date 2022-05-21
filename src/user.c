@@ -250,7 +250,7 @@ int is_node_has_permission(DirectoryNode *dirNode, char o)
     return -1;
 }
 
-void login(UserList *userList, DirectoryTree *dirTree)
+void login(UserList *userList, DirectoryTree *p_directoryTree)
 {
     UserNode *tmpUser = NULL;
     char userName[MAX_NAME_SIZE];
@@ -285,5 +285,5 @@ void login(UserList *userList, DirectoryTree *dirTree)
     }
 
     strcpy(tmp, userList->current->dir);
-    move_directory_path(dirTree, tmp);
+    move_directory_path(p_directoryTree, tmp);
 }

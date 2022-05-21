@@ -4,7 +4,7 @@
 
 int main()
 {
-    char cmd[50];
+    char command[50];
 
     gp_directoryTree = load_directory();
     gp_userList = load_user_list();
@@ -17,9 +17,9 @@ int main()
     while (1)
     {
         print_head(gp_directoryTree, gp_directoryStack);
-        fgets(cmd, sizeof(cmd), stdin);
-        cmd[strlen(cmd) - 1] = '\0';
-        instruction(gp_directoryTree, cmd);
+        fgets(command, sizeof(command), stdin);
+        command[strlen(command) - 1] = '\0';
+        instruction(gp_directoryTree, command);
     }
 
     return 0;

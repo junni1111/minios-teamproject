@@ -68,16 +68,16 @@ void destory_directory(DirectoryNode *dirNode)
     destory_node(dirNode);
 }
 
-DirectoryNode *is_exist_directory(DirectoryTree *dirTree, char *dirName, char type)
+DirectoryNode *is_exist_directory(DirectoryTree *p_directoryTree, char *directoryName, char type)
 {
     // variables
     DirectoryNode *returnNode = NULL;
 
-    returnNode = dirTree->current->LeftChild;
+    returnNode = p_directoryTree->current->LeftChild;
 
     while (returnNode != NULL)
     {
-        if (strcmp(returnNode->name, dirName) == 0 && returnNode->type == type)
+        if (strcmp(returnNode->name, directoryName) == 0 && returnNode->type == type)
             break;
         returnNode = returnNode->RightSibling;
     }
@@ -85,15 +85,15 @@ DirectoryNode *is_exist_directory(DirectoryTree *dirTree, char *dirName, char ty
     return returnNode;
 }
 
-char *get_directory(char *dirPath)
+char *get_directory(char *directoryPath)
 {
     char *tmpPath = (char *)malloc(MAX_DIRECTORY_SIZE);
     char *str = NULL;
     char tmp[MAX_DIRECTORY_SIZE];
     char tmp2[MAX_DIRECTORY_SIZE];
 
-    strncpy(tmp, dirPath, MAX_DIRECTORY_SIZE);
-    str = strtok(dirPath, "/");
+    strncpy(tmp, directoryPath, MAX_DIRECTORY_SIZE);
+    str = strtok(directoryPath, "/");
     while (str != NULL)
     {
         strncpy(tmp2, str, MAX_DIRECTORY_SIZE);
@@ -106,7 +106,7 @@ char *get_directory(char *dirPath)
 }
 
 // save & load
-void get_directory_path(DirectoryTree *dirTree, DirectoryNode *dirNode, Stack *dirStack)
+void get_directory_path(DirectoryTree *p_directoryTree, DirectoryNode *dirNode, Stack *p_directoryStack)
 {
     // variables
     DirectoryNode *tmpNode = NULL;
@@ -114,7 +114,7 @@ void get_directory_path(DirectoryTree *dirTree, DirectoryNode *dirNode, Stack *d
 
     tmpNode = dirNode->Parent;
 
-    if (tmpNode == dirTree->root)
+    if (tmpNode == p_directoryTree->root)
     {
         strcpy(tmp, "/");
     }
@@ -123,51 +123,51 @@ void get_directory_path(DirectoryTree *dirTree, DirectoryNode *dirNode, Stack *d
         // until current directory is root, repeat Push
         while (tmpNode->Parent != NULL)
         {
-            push(dirStack, tmpNode->name);
+            push(p_directoryStack, tmpNode->name);
             tmpNode = tmpNode->Parent;
         }
         // until stack is empty, repeat Pop
-        while (is_empty(dirStack) == 0)
+        while (is_empty(p_directoryStack) == 0)
         {
             strcat(tmp, "/");
-            strcat(tmp, pop(dirStack));
+            strcat(tmp, pop(p_directoryStack));
         }
     }
     // return path;
     fprintf(f_directory, " %s\n", tmp);
 }
 
-void write_directory_node(DirectoryTree *dirTree, DirectoryNode *dirNode, Stack *dirStack)
+void write_directory_node(DirectoryTree *p_directoryTree, DirectoryNode *dirNode, Stack *p_directoryStack)
 {
     fprintf(f_directory, "%s %c %d ", dirNode->name, dirNode->type, dirNode->mode);
     fprintf(f_directory, "%d %d %d %d %d %d %d", dirNode->SIZE, dirNode->UID, dirNode->GID, dirNode->month, dirNode->day, dirNode->hour, dirNode->minute);
 
-    if (dirNode == dirTree->root)
+    if (dirNode == p_directoryTree->root)
         fprintf(f_directory, "\n");
     else
-        get_directory_path(dirTree, dirNode, dirStack);
+        get_directory_path(p_directoryTree, dirNode, p_directoryStack);
 
     if (dirNode->RightSibling != NULL)
     {
-        write_directory_node(dirTree, dirNode->RightSibling, dirStack);
+        write_directory_node(p_directoryTree, dirNode->RightSibling, p_directoryStack);
     }
     if (dirNode->LeftChild != NULL)
     {
-        write_directory_node(dirTree, dirNode->LeftChild, dirStack);
+        write_directory_node(p_directoryTree, dirNode->LeftChild, p_directoryStack);
     }
 }
 
-void save_directory(DirectoryTree *dirTree, Stack *dirStack)
+void save_directory(DirectoryTree *p_directoryTree, Stack *p_directoryStack)
 {
 
     f_directory = fopen("./resources/Directory.txt", "w");
 
-    write_directory_node(dirTree, dirTree->root, dirStack);
+    write_directory_node(p_directoryTree, p_directoryTree->root, p_directoryStack);
 
     fclose(f_directory);
 }
 
-int read_directory_node(DirectoryTree *dirTree, char *tmp)
+int read_directory_node(DirectoryTree *p_directoryTree, char *tmp)
 {
     DirectoryNode *NewNode = (DirectoryNode *)malloc(sizeof(DirectoryNode));
     DirectoryNode *tmpNode = NULL;
@@ -203,16 +203,16 @@ int read_directory_node(DirectoryTree *dirTree, char *tmp)
     if (str != NULL)
     {
         str[strlen(str) - 1] = '\0';
-        move_directory_path(dirTree, str);
-        NewNode->Parent = dirTree->current;
+        move_directory_path(p_directoryTree, str);
+        NewNode->Parent = p_directoryTree->current;
 
-        if (dirTree->current->LeftChild == NULL)
+        if (p_directoryTree->current->LeftChild == NULL)
         {
-            dirTree->current->LeftChild = NewNode;
+            p_directoryTree->current->LeftChild = NewNode;
         }
         else
         {
-            tmpNode = dirTree->current->LeftChild;
+            tmpNode = p_directoryTree->current->LeftChild;
 
             while (tmpNode->RightSibling != NULL)
                 tmpNode = tmpNode->RightSibling;
@@ -222,8 +222,8 @@ int read_directory_node(DirectoryTree *dirTree, char *tmp)
     }
     else
     {
-        dirTree->root = NewNode;
-        dirTree->current = dirTree->root;
+        p_directoryTree->root = NewNode;
+        p_directoryTree->current = p_directoryTree->root;
     }
 
     return 0;
@@ -231,28 +231,28 @@ int read_directory_node(DirectoryTree *dirTree, char *tmp)
 
 DirectoryTree *load_directory()
 {
-    DirectoryTree *dirTree = (DirectoryTree *)malloc(sizeof(DirectoryTree));
+    DirectoryTree *p_directoryTree = (DirectoryTree *)malloc(sizeof(DirectoryTree));
     char tmp[MAX_LENGTH_SIZE];
 
     f_directory = fopen("./resources/Directory.txt", "r");
 
     while (fgets(tmp, MAX_LENGTH_SIZE, f_directory) != NULL)
     {
-        read_directory_node(dirTree, tmp);
+        read_directory_node(p_directoryTree, tmp);
     }
 
     fclose(f_directory);
 
-    dirTree->current = dirTree->root;
+    p_directoryTree->current = p_directoryTree->root;
 
-    return dirTree;
+    return p_directoryTree;
 }
 
 // mkdir
 DirectoryTree *initialize_directory_tree()
 {
     // variables
-    DirectoryTree *dirTree = (DirectoryTree *)malloc(sizeof(DirectoryTree));
+    DirectoryTree *p_directoryTree = (DirectoryTree *)malloc(sizeof(DirectoryTree));
     DirectoryNode *NewNode = (DirectoryNode *)malloc(sizeof(DirectoryNode));
     // get time
     time(&ltime);
@@ -275,34 +275,34 @@ DirectoryTree *initialize_directory_tree()
     NewNode->RightSibling = NULL;
 
     // set dirTree
-    dirTree->root = NewNode;
-    dirTree->current = dirTree->root;
+    p_directoryTree->root = NewNode;
+    p_directoryTree->current = p_directoryTree->root;
 
-    return dirTree;
+    return p_directoryTree;
 }
 // type==0: folder, type==1: file
-int make_directory(DirectoryTree *dirTree, char *dirName, char type)
+int make_directory(DirectoryTree *p_directoryTree, char *directoryName, char type)
 {
     // variables
     DirectoryNode *NewNode = (DirectoryNode *)malloc(sizeof(DirectoryNode));
     DirectoryNode *tmpNode = NULL;
 
-    if (is_node_has_permission(dirTree->current, 'w') != 0)
+    if (is_node_has_permission(p_directoryTree->current, 'w') != 0)
     {
-        printf("mkdir: '%s' 디렉터리를 만들 수 없습니다: 허가 거부\n", dirName);
+        printf("mkdir: '%s' 디렉터리를 만들 수 없습니다: 허가 거부\n", directoryName);
         free(NewNode);
         return -1;
     }
-    if (strcmp(dirName, ".") == 0 || strcmp(dirName, "..") == 0)
+    if (strcmp(directoryName, ".") == 0 || strcmp(directoryName, "..") == 0)
     {
-        printf("mkdir: '%s' 디렉터리를 만들 수 없습니다\n", dirName);
+        printf("mkdir: '%s' 디렉터리를 만들 수 없습니다\n", directoryName);
         free(NewNode);
         return -1;
     }
-    tmpNode = is_exist_directory(dirTree, dirName, type);
+    tmpNode = is_exist_directory(p_directoryTree, directoryName, type);
     if (tmpNode != NULL && tmpNode->type == 'd')
     {
-        printf("mkdir: '%s' 디렉터리를 만들 수 없습니다: 파일이 존재합니다\n", dirName);
+        printf("mkdir: '%s' 디렉터리를 만들 수 없습니다: 파일이 존재합니다\n", directoryName);
         free(NewNode);
         return -1;
     }
@@ -315,8 +315,8 @@ int make_directory(DirectoryTree *dirTree, char *dirName, char type)
     NewNode->RightSibling = NULL;
 
     // set NewNode
-    strncpy(NewNode->name, dirName, MAX_NAME_SIZE);
-    if (dirName[0] == '.')
+    strncpy(NewNode->name, directoryName, MAX_NAME_SIZE);
+    if (directoryName[0] == '.')
     {
         NewNode->type = 'd';
         // rwx------
@@ -344,15 +344,15 @@ int make_directory(DirectoryTree *dirTree, char *dirName, char type)
     NewNode->day = today->tm_mday;
     NewNode->hour = today->tm_hour;
     NewNode->minute = today->tm_min;
-    NewNode->Parent = dirTree->current;
+    NewNode->Parent = p_directoryTree->current;
 
-    if (dirTree->current->LeftChild == NULL)
+    if (p_directoryTree->current->LeftChild == NULL)
     {
-        dirTree->current->LeftChild = NewNode;
+        p_directoryTree->current->LeftChild = NewNode;
     }
     else
     {
-        tmpNode = dirTree->current->LeftChild;
+        tmpNode = p_directoryTree->current->LeftChild;
 
         while (tmpNode->RightSibling != NULL)
         {
@@ -365,23 +365,23 @@ int make_directory(DirectoryTree *dirTree, char *dirName, char type)
 }
 
 // rm
-int remove_directory(DirectoryTree *dirTree, char *dirName)
+int remove_directory(DirectoryTree *p_directoryTree, char *directoryName)
 {
     DirectoryNode *DelNode = NULL;
     DirectoryNode *tmpNode = NULL;
     DirectoryNode *prevNode = NULL;
 
-    tmpNode = dirTree->current->LeftChild;
+    tmpNode = p_directoryTree->current->LeftChild;
 
     if (tmpNode == NULL)
     {
-        printf("rm: '%s'를 지울 수 없음: 그런 파일이나 디렉터리가 없습니다\n", dirName);
+        printf("rm: '%s'를 지울 수 없음: 그런 파일이나 디렉터리가 없습니다\n", directoryName);
         return -1;
     }
 
-    if (strcmp(tmpNode->name, dirName) == 0)
+    if (strcmp(tmpNode->name, directoryName) == 0)
     {
-        dirTree->current->LeftChild = tmpNode->RightSibling;
+        p_directoryTree->current->LeftChild = tmpNode->RightSibling;
         DelNode = tmpNode;
         if (DelNode->LeftChild != NULL)
             destory_directory(DelNode->LeftChild);
@@ -391,7 +391,7 @@ int remove_directory(DirectoryTree *dirTree, char *dirName)
     {
         while (tmpNode != NULL)
         {
-            if (strcmp(tmpNode->name, dirName) == 0)
+            if (strcmp(tmpNode->name, directoryName) == 0)
             {
                 DelNode = tmpNode;
                 break;
@@ -409,7 +409,7 @@ int remove_directory(DirectoryTree *dirTree, char *dirName)
         }
         else
         {
-            printf("rm: '%s'를 지울 수 없음: 그런 파일이나 디렉터리가 없습니다\n", dirName);
+            printf("rm: '%s'를 지울 수 없음: 그런 파일이나 디렉터리가 없습니다\n", directoryName);
             return -1;
         }
     }
@@ -417,28 +417,28 @@ int remove_directory(DirectoryTree *dirTree, char *dirName)
 }
 
 // cd
-int move_current_tree(DirectoryTree *dirTree, char *dirPath)
+int move_current_tree(DirectoryTree *p_directoryTree, char *directoryPath)
 {
     DirectoryNode *tmpNode = NULL;
 
-    if (strcmp(dirPath, ".") == 0)
+    if (strcmp(directoryPath, ".") == 0)
     {
     }
-    else if (strcmp(dirPath, "..") == 0)
+    else if (strcmp(directoryPath, "..") == 0)
     {
-        if (dirTree->current != dirTree->root)
+        if (p_directoryTree->current != p_directoryTree->root)
         {
-            dirTree->current = dirTree->current->Parent;
+            p_directoryTree->current = p_directoryTree->current->Parent;
         }
     }
     else
     {
 
         // if input path exist
-        tmpNode = is_exist_directory(dirTree, dirPath, 'd');
+        tmpNode = is_exist_directory(p_directoryTree, directoryPath, 'd');
         if (tmpNode != NULL)
         {
-            dirTree->current = tmpNode;
+            p_directoryTree->current = tmpNode;
         }
         else
             return -1;
@@ -446,7 +446,7 @@ int move_current_tree(DirectoryTree *dirTree, char *dirPath)
     return 0;
 }
 
-int move_directory_path(DirectoryTree *dirTree, char *dirPath)
+int move_directory_path(DirectoryTree *p_directoryTree, char *directoryPath)
 {
     // variables
     DirectoryNode *tmpNode = NULL;
@@ -455,33 +455,33 @@ int move_directory_path(DirectoryTree *dirTree, char *dirPath)
     int val = 0;
 
     // set tmp
-    strncpy(tmpPath, dirPath, MAX_DIRECTORY_SIZE);
-    tmpNode = dirTree->current;
+    strncpy(tmpPath, directoryPath, MAX_DIRECTORY_SIZE);
+    tmpNode = p_directoryTree->current;
     // if input is root
-    if (strcmp(dirPath, "/") == 0)
+    if (strcmp(directoryPath, "/") == 0)
     {
-        dirTree->current = dirTree->root;
+        p_directoryTree->current = p_directoryTree->root;
     }
     else
     {
         // if input is absolute path
-        if (strncmp(dirPath, "/", 1) == 0)
+        if (strncmp(directoryPath, "/", 1) == 0)
         {
-            if (strtok(dirPath, "/") == NULL)
+            if (strtok(directoryPath, "/") == NULL)
             {
                 return -1;
             }
-            dirTree->current = dirTree->root;
+            p_directoryTree->current = p_directoryTree->root;
         }
         // if input is relative path
         str = strtok(tmpPath, "/");
         while (str != NULL)
         {
-            val = move_current_tree(dirTree, str);
+            val = move_current_tree(p_directoryTree, str);
             // if input path doesn't exist
             if (val != 0)
             {
-                dirTree->current = tmpNode;
+                p_directoryTree->current = tmpNode;
                 return -1;
             }
             str = strtok(NULL, "/");
@@ -491,15 +491,15 @@ int move_directory_path(DirectoryTree *dirTree, char *dirPath)
 }
 
 // pwd
-int print_directory_path(DirectoryTree *dirTree, Stack *dirStack)
+int print_directory_path(DirectoryTree *p_directoryTree, Stack *p_directoryStack)
 {
     // variables
     DirectoryNode *tmpNode = NULL;
 
-    tmpNode = dirTree->current;
+    tmpNode = p_directoryTree->current;
 
     // if current directory is root
-    if (tmpNode == dirTree->root)
+    if (tmpNode == p_directoryTree->root)
     {
         printf("/");
     }
@@ -508,14 +508,14 @@ int print_directory_path(DirectoryTree *dirTree, Stack *dirStack)
         // until current directory is root, repeat Push
         while (tmpNode->Parent != NULL)
         {
-            push(dirStack, tmpNode->name);
+            push(p_directoryStack, tmpNode->name);
             tmpNode = tmpNode->Parent;
         }
         // until stack is empty, repeat Pop
-        while (is_empty(dirStack) == 0)
+        while (is_empty(p_directoryStack) == 0)
         {
             printf("/");
-            printf("%s", pop(dirStack));
+            printf("%s", pop(p_directoryStack));
         }
     }
     printf("\n");
@@ -524,7 +524,7 @@ int print_directory_path(DirectoryTree *dirTree, Stack *dirStack)
 }
 
 // ls
-int list_directory(DirectoryTree *dirTree, int a, int l)
+int list_directory(DirectoryTree *p_directoryTree, int a, int l)
 {
     // variables
     DirectoryNode *tmpNode = NULL;
@@ -532,11 +532,11 @@ int list_directory(DirectoryTree *dirTree, int a, int l)
     char type;
     int cnt;
 
-    tmpNode = dirTree->current->LeftChild;
+    tmpNode = p_directoryTree->current->LeftChild;
 
-    if (is_node_has_permission(dirTree->current, 'r') != 0)
+    if (is_node_has_permission(p_directoryTree->current, 'r') != 0)
     {
-        printf("ls: '%s'디렉터리를 열 수 없음: 허가거부\n", dirTree->current->name);
+        printf("ls: '%s'디렉터리를 열 수 없음: 허가거부\n", p_directoryTree->current->name);
         return -1;
     }
 
@@ -555,7 +555,7 @@ int list_directory(DirectoryTree *dirTree, int a, int l)
             BLUE;
             printf(".\t");
             DEFAULT;
-            if (dirTree->current != dirTree->root)
+            if (p_directoryTree->current != p_directoryTree->root)
             {
                 BOLD;
                 BLUE;
@@ -599,7 +599,7 @@ int list_directory(DirectoryTree *dirTree, int a, int l)
         }
         if (a == 1)
         {
-            tmpNode2 = dirTree->current->LeftChild;
+            tmpNode2 = p_directoryTree->current->LeftChild;
             if (tmpNode2 == NULL)
             {
                 cnt = 2;
@@ -619,21 +619,21 @@ int list_directory(DirectoryTree *dirTree, int a, int l)
                 }
             }
 
-            printf("%c", dirTree->current->type);
-            print_permission(dirTree->current);
+            printf("%c", p_directoryTree->current->type);
+            print_permission(p_directoryTree->current);
             printf("%3d", cnt);
             printf("   ");
-            printf("%-5s%-5s", get_UID(dirTree->current), get_GID(dirTree->current));
-            printf("%5d ", dirTree->current->SIZE);
-            printf("%d월 %2d %02d:%02d ", dirTree->current->month, dirTree->current->day, dirTree->current->hour, dirTree->current->minute);
+            printf("%-5s%-5s", get_UID(p_directoryTree->current), get_GID(p_directoryTree->current));
+            printf("%5d ", p_directoryTree->current->SIZE);
+            printf("%d월 %2d %02d:%02d ", p_directoryTree->current->month, p_directoryTree->current->day, p_directoryTree->current->hour, p_directoryTree->current->minute);
             BOLD;
             BLUE;
             printf(".\n");
             DEFAULT;
 
-            if (dirTree->current != dirTree->root)
+            if (p_directoryTree->current != p_directoryTree->root)
             {
-                tmpNode2 = dirTree->current->Parent->LeftChild;
+                tmpNode2 = p_directoryTree->current->Parent->LeftChild;
                 if (tmpNode2 == NULL)
                 {
                     cnt = 2;
@@ -652,13 +652,13 @@ int list_directory(DirectoryTree *dirTree, int a, int l)
                             cnt = cnt + 1;
                     }
                 }
-                printf("%c", dirTree->current->Parent->type);
-                print_permission(dirTree->current->Parent);
+                printf("%c", p_directoryTree->current->Parent->type);
+                print_permission(p_directoryTree->current->Parent);
                 printf("%3d", cnt);
                 printf("   ");
-                printf("%-5s%-5s", get_UID(dirTree->current->Parent), get_GID(dirTree->current->Parent));
-                printf("%5d ", dirTree->current->SIZE);
-                printf("%d월 %2d %02d:%02d ", dirTree->current->Parent->month, dirTree->current->Parent->day, dirTree->current->Parent->hour, dirTree->current->Parent->minute);
+                printf("%-5s%-5s", get_UID(p_directoryTree->current->Parent), get_GID(p_directoryTree->current->Parent));
+                printf("%5d ", p_directoryTree->current->SIZE);
+                printf("%d월 %2d %02d:%02d ", p_directoryTree->current->Parent->month, p_directoryTree->current->Parent->day, p_directoryTree->current->Parent->hour, p_directoryTree->current->Parent->minute);
                 BOLD;
                 BLUE;
                 printf("..\n");
@@ -727,7 +727,7 @@ int list_directory(DirectoryTree *dirTree, int a, int l)
 }
 
 // cat
-int concatenate(DirectoryTree *dirTree, char *fName, int o)
+int concatenate(DirectoryTree *p_directoryTree, char *fName, int o)
 {
     UserNode *tmpUser = NULL;
     DirectoryNode *tmpNode = NULL;
@@ -751,7 +751,7 @@ int concatenate(DirectoryTree *dirTree, char *fName, int o)
             }
             return 0;
         }
-        tmpNode = is_exist_directory(dirTree, fName, 'f');
+        tmpNode = is_exist_directory(p_directoryTree, fName, 'f');
 
         if (tmpNode == NULL)
         {
@@ -802,7 +802,7 @@ int concatenate(DirectoryTree *dirTree, char *fName, int o)
 
         fclose(fp);
 
-        tmpNode = is_exist_directory(dirTree, fName, 'f');
+        tmpNode = is_exist_directory(p_directoryTree, fName, 'f');
         // if exist
         if (tmpNode != NULL)
         {
@@ -817,29 +817,29 @@ int concatenate(DirectoryTree *dirTree, char *fName, int o)
         // if file doesn't exist
         else
         {
-            make_directory(dirTree, fName, 'f');
+            make_directory(p_directoryTree, fName, 'f');
         }
         // write size
-        tmpNode = is_exist_directory(dirTree, fName, 'f');
+        tmpNode = is_exist_directory(p_directoryTree, fName, 'f');
         tmpNode->SIZE = tmpSIZE;
     }
     return 0;
 }
 
 // chmod
-int change_mode(DirectoryTree *dirTree, int mode, char *dirName)
+int change_mode(DirectoryTree *p_directoryTree, int mode, char *directoryName)
 {
     DirectoryNode *tmpNode = NULL;
     DirectoryNode *tmpNode2 = NULL;
 
-    tmpNode = is_exist_directory(dirTree, dirName, 'd');
-    tmpNode2 = is_exist_directory(dirTree, dirName, 'f');
+    tmpNode = is_exist_directory(p_directoryTree, directoryName, 'd');
+    tmpNode2 = is_exist_directory(p_directoryTree, directoryName, 'f');
 
     if (tmpNode != NULL)
     {
         if (is_node_has_permission(tmpNode, 'w') != 0)
         {
-            printf("chmod: '%s'파일을 수정할 수 없음: 허가거부\n", dirName);
+            printf("chmod: '%s'파일을 수정할 수 없음: 허가거부\n", directoryName);
             return -1;
         }
         tmpNode->mode = mode;
@@ -849,7 +849,7 @@ int change_mode(DirectoryTree *dirTree, int mode, char *dirName)
     {
         if (is_node_has_permission(tmpNode2, 'w') != 0)
         {
-            printf("chmod: '%s'파일을 수정할 수 없음: 허가거부\n", dirName);
+            printf("chmod: '%s'파일을 수정할 수 없음: 허가거부\n", directoryName);
             return -1;
         }
         tmpNode2->mode = mode;
@@ -857,7 +857,7 @@ int change_mode(DirectoryTree *dirTree, int mode, char *dirName)
     }
     else
     {
-        printf("chmod: '%s에 접근할 수 없습니다: 그런 파일이나 디렉터리가 없습니다\n", dirName);
+        printf("chmod: '%s에 접근할 수 없습니다: 그런 파일이나 디렉터리가 없습니다\n", directoryName);
         return -1;
     }
     return 0;
@@ -878,20 +878,20 @@ void change_all_mode(DirectoryNode *dirNode, int mode)
 }
 
 // chown
-int change_owner(DirectoryTree *dirTree, char *userName, char *dirName)
+int change_owner(DirectoryTree *p_directoryTree, char *userName, char *directoryName)
 {
     DirectoryNode *tmpNode = NULL;
     DirectoryNode *tmpNode2 = NULL;
     UserNode *tmpUser = NULL;
 
-    tmpNode = is_exist_directory(dirTree, dirName, 'd');
-    tmpNode2 = is_exist_directory(dirTree, dirName, 'f');
+    tmpNode = is_exist_directory(p_directoryTree, directoryName, 'd');
+    tmpNode2 = is_exist_directory(p_directoryTree, directoryName, 'f');
 
     if (tmpNode != NULL)
     {
         if (is_node_has_permission(tmpNode, 'w') != 0)
         {
-            printf("chown: '%s'파일을 수정할 수 없음: 허가거부\n", dirName);
+            printf("chown: '%s'파일을 수정할 수 없음: 허가거부\n", directoryName);
             return -1;
         }
         tmpUser = is_exist_user(gp_userList, userName);
@@ -911,7 +911,7 @@ int change_owner(DirectoryTree *dirTree, char *userName, char *dirName)
     {
         if (is_node_has_permission(tmpNode2, 'w') != 0)
         {
-            printf("chown: '%s'파일을 수정할 수 없음: 허가거부\n", dirName);
+            printf("chown: '%s'파일을 수정할 수 없음: 허가거부\n", directoryName);
             return -1;
         }
         tmpUser = is_exist_user(gp_userList, userName);
@@ -929,7 +929,7 @@ int change_owner(DirectoryTree *dirTree, char *userName, char *dirName)
     }
     else
     {
-        printf("chown: '%s'에 접근할 수 없습니다: 그런 파일이나 디렉터리가 없습니다\n", dirName);
+        printf("chown: '%s'에 접근할 수 없습니다: 그런 파일이나 디렉터리가 없습니다\n", directoryName);
         return -1;
     }
 
@@ -955,7 +955,7 @@ void change_all_owner(DirectoryNode *dirNode, char *userName)
 }
 
 // find
-int read_directory(DirectoryTree *dirTree, char *tmp, char *dirName, int o)
+int read_directory(DirectoryTree *p_directoryTree, char *tmp, char *directoryName, int o)
 {
     char *str;
     char str2[MAX_NAME_SIZE];
@@ -969,7 +969,7 @@ int read_directory(DirectoryTree *dirTree, char *tmp, char *dirName, int o)
         }
         if (str != NULL)
         {
-            if (strstr(str2, dirName) != NULL)
+            if (strstr(str2, directoryName) != NULL)
             {
                 str[strlen(str) - 1] = '\0';
                 if (strcmp(str, "/") == 0)
@@ -989,7 +989,7 @@ int read_directory(DirectoryTree *dirTree, char *tmp, char *dirName, int o)
         }
         if (str != NULL)
         {
-            if (strstr(str, dirName) != NULL)
+            if (strstr(str, directoryName) != NULL)
             {
                 str[strlen(str) - 1] = '\0';
                 if (strcmp(str, "/") == 0)
@@ -1002,7 +1002,7 @@ int read_directory(DirectoryTree *dirTree, char *tmp, char *dirName, int o)
     return 0;
 }
 
-void find_directory(DirectoryTree *dirTree, char *dirName, int o)
+void find_directory(DirectoryTree *p_directoryTree, char *directoryName, int o)
 {
     char tmp[MAX_LENGTH_SIZE];
 
@@ -1010,7 +1010,7 @@ void find_directory(DirectoryTree *dirTree, char *dirName, int o)
 
     while (fgets(tmp, MAX_LENGTH_SIZE, f_directory) != NULL)
     {
-        read_directory(dirTree, tmp, dirName, o);
+        read_directory(p_directoryTree, tmp, directoryName, o);
     }
 
     fclose(f_directory);
