@@ -3,5 +3,9 @@
 miniOS만들기 by c
 
 build : make
+
 clean : make clean
+
 clean<except OS> : make obj
+
+run : make run

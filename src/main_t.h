@@ -17,7 +17,7 @@
 #define MAX_DIRECTORY_SIZE 50
 #define MAX_NAME_SIZE 20
 
-// User
+// f_user
 typedef struct tagUserNode
 {
     char name[MAX_NAME_SIZE];
@@ -102,7 +102,7 @@ void print_head(DirectoryTree *dirTree, Stack *dirStack);
 // directory.c
 // utility
 int mode_to_permission(DirectoryNode *dirNode);
-void print_permission(DirectoryNode *dirNode);
+void print_to_permission(DirectoryNode *dirNode);
 void destory_node(DirectoryNode *dirNode);
 void destory_directory(DirectoryNode *dirNode);
 DirectoryNode *is_exist_directory(DirectoryTree *dirTree, char *dirName, char type);
@@ -121,7 +121,7 @@ int make_directory(DirectoryTree *dirTree, char *dirName, char type);
 // rm
 int remove_directory(DirectoryTree *dirTree, char *dirName);
 // cd
-int move_current_tree(DirectoryTree *dirTree, char *dirPath);
+int move_current_path(DirectoryTree *dirTree, char *dirPath);
 int move_directory_path(DirectoryTree *dirTree, char *dirPath);
 // pwd
 int print_directory_path(DirectoryTree *dirTree, Stack *dirStack);
@@ -152,8 +152,8 @@ int is_node_has_permission(DirectoryNode *dirNode, char o);
 void login(UserList *userList, DirectoryTree *dirTree);
 
 // stack.c
-Stack *initialize_stack();
 int is_empty(Stack *dirStack);
+Stack *initialize_stack();
 int push(Stack *dirStack, char *dirName);
 char *pop(Stack *dirStack);
 
@@ -161,8 +161,8 @@ char *pop(Stack *dirStack);
 void get_month(int i);
 void get_weekday(int i);
 
-// global variable
-DirectoryTree *gp_directoryTree;
+// global pointer variable
+DirectoryTree *gp_directory;
 Stack *gp_directoryStack;
 UserList *gp_userList;
 FILE *f_directory;
