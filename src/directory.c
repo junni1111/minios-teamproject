@@ -134,16 +134,16 @@ void get_directory_path(DirectoryTree *p_directoryTree, DirectoryNode *dirNode, 
         }
     }
     // return path;
-    fprintf(f_directory, " %s\n", tmp);
+    fprintf(gp_file_directory, " %s\n", tmp);
 }
 
 void write_directory_node(DirectoryTree *p_directoryTree, DirectoryNode *dirNode, Stack *p_directoryStack)
 {
-    fprintf(f_directory, "%s %c %d ", dirNode->name, dirNode->type, dirNode->mode);
-    fprintf(f_directory, "%d %d %d %d %d %d %d", dirNode->SIZE, dirNode->UID, dirNode->GID, dirNode->month, dirNode->day, dirNode->hour, dirNode->minute);
+    fprintf(gp_file_directory, "%s %c %d ", dirNode->name, dirNode->type, dirNode->mode);
+    fprintf(gp_file_directory, "%d %d %d %d %d %d %d", dirNode->SIZE, dirNode->UID, dirNode->GID, dirNode->month, dirNode->day, dirNode->hour, dirNode->minute);
 
     if (dirNode == p_directoryTree->root)
-        fprintf(f_directory, "\n");
+        fprintf(gp_file_directory, "\n");
     else
         get_directory_path(p_directoryTree, dirNode, p_directoryStack);
 
@@ -160,11 +160,11 @@ void write_directory_node(DirectoryTree *p_directoryTree, DirectoryNode *dirNode
 void save_directory(DirectoryTree *p_directoryTree, Stack *p_directoryStack)
 {
 
-    f_directory = fopen("./resources/Directory.txt", "w");
+    gp_file_directory = fopen("./resources/Directory.txt", "w");
 
     write_directory_node(p_directoryTree, p_directoryTree->root, p_directoryStack);
 
-    fclose(f_directory);
+    fclose(gp_file_directory);
 }
 
 int read_directory_node(DirectoryTree *p_directoryTree, char *tmp)
@@ -234,14 +234,14 @@ DirectoryTree *load_directory()
     DirectoryTree *p_directoryTree = (DirectoryTree *)malloc(sizeof(DirectoryTree));
     char tmp[MAX_LENGTH_SIZE];
 
-    f_directory = fopen("./resources/Directory.txt", "r");
+    gp_file_directory = fopen("./resources/Directory.txt", "r");
 
-    while (fgets(tmp, MAX_LENGTH_SIZE, f_directory) != NULL)
+    while (fgets(tmp, MAX_LENGTH_SIZE, gp_file_directory) != NULL)
     {
         read_directory_node(p_directoryTree, tmp);
     }
 
-    fclose(f_directory);
+    fclose(gp_file_directory);
 
     p_directoryTree->current = p_directoryTree->root;
 
@@ -1006,12 +1006,12 @@ void find_directory(DirectoryTree *p_directoryTree, char *directoryName, int o)
 {
     char tmp[MAX_LENGTH_SIZE];
 
-    f_directory = fopen("./resources/Directory.txt", "r");
+    gp_file_directory = fopen("./resources/Directory.txt", "r");
 
-    while (fgets(tmp, MAX_LENGTH_SIZE, f_directory) != NULL)
+    while (fgets(tmp, MAX_LENGTH_SIZE, gp_file_directory) != NULL)
     {
         read_directory(p_directoryTree, tmp, directoryName, o);
     }
 
-    fclose(f_directory);
+    fclose(gp_file_directory);
 }

@@ -1464,14 +1464,16 @@ void instruction(DirectoryTree *p_directoryTree, char *command)
 
 void print_start()
 {
-    printf("Welcome to Ubuntu 18.04.2 LTS (GNU/Linux 4.18.0-17-generic x86_64)\n\n");
-    printf(" * Documentation: https://help.ubuntu.com\n");
-    printf(" * Management:    https://landscape.canonial.com\n");
-    printf(" * Support:       https://ubuntu.com/advantage\n\n\n");
-    printf(" * Canonial Livepatch is available for installation.\n");
-    printf("   - Reduce system reboots and improve kernel security. Activate at:\n");
-    printf("     https://ubuntu.com/livepatch\n\n");
-    printf("Your Hardware Enablement Stack(HWE) is supported until April 2023.\n");
+    // printf("Welcome to Ubuntu 18.04.2 LTS (GNU/Linux 4.18.0-17-generic x86_64)\n\n");
+    // printf(" * Documentation: https://help.ubuntu.com\n");
+    // printf(" * Management:    https://landscape.canonial.com\n");
+    // printf(" * Support:       https://ubuntu.com/advantage\n\n\n");
+    // printf(" * Canonial Livepatch is available for installation.\n");
+    // printf("   - Reduce system reboots and improve kernel security. Activate at:\n");
+    // printf("     https://ubuntu.com/livepatch\n\n");
+    // printf("Your Hardware Enablement Stack(HWE) is supported until April 2023.\n");
+    printf("Welcome to miniOS 1.0.0\n\n");
+
     printf("Last login: ");
     get_weekday(gp_userList->current->wday);
     get_month(gp_userList->current->month);
@@ -1493,7 +1495,7 @@ void print_head(DirectoryTree *p_directoryTree, Stack *p_directoryStack)
 
     BOLD;
     GREEN;
-    printf("%s@os-Virtualbox", gp_userList->current->name);
+    printf("%s@miniOS", gp_userList->current->name);
     DEFAULT;
     printf(":");
     tmpNode = p_directoryTree->current;

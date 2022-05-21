@@ -161,12 +161,12 @@ char *pop(Stack *p_directoryStack);
 void get_month(int i);
 void get_weekday(int i);
 
-// global variable
+// global pointer variable
 DirectoryTree *gp_directoryTree;
 Stack *gp_directoryStack;
 UserList *gp_userList;
-FILE *f_directory;
-FILE *f_user;
+FILE *gp_file_directory;
+FILE *gp_file_user;
 
 // global variable
 sem_t semp;

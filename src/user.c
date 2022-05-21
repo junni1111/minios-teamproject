@@ -46,7 +46,7 @@ void write_user(UserList *userList, UserNode *userNode)
     userList->current->minute = today->tm_min;
     userList->current->sec = today->tm_sec;
 
-    fprintf(f_user, "%s %d %d %d %d %d %d %d %d %d %s\n", userNode->name, userNode->UID, userNode->GID, userNode->year, userNode->month, userNode->wday, userNode->day, userNode->hour, userNode->minute, userNode->sec, userNode->dir);
+    fprintf(gp_file_user, "%s %d %d %d %d %d %d %d %d %d %s\n", userNode->name, userNode->UID, userNode->GID, userNode->year, userNode->month, userNode->wday, userNode->day, userNode->hour, userNode->minute, userNode->sec, userNode->dir);
 
     if (userNode->LinkNode != NULL)
     {
@@ -56,11 +56,11 @@ void write_user(UserList *userList, UserNode *userNode)
 
 void save_user_list(UserList *userList)
 {
-    f_user = fopen("./resources/User.txt", "w");
+    gp_file_user = fopen("./resources/User.txt", "w");
 
     write_user(userList, userList->head);
 
-    fclose(f_user);
+    fclose(gp_file_user);
 }
 
 int read_user(UserList *userList, char *tmp)
@@ -112,14 +112,14 @@ UserList *load_user_list()
     UserList *userList = (UserList *)malloc(sizeof(UserList));
     char tmp[MAX_LENGTH_SIZE];
 
-    f_user = fopen("./resources/User.txt", "r");
+    gp_file_user = fopen("./resources/User.txt", "r");
 
-    while (fgets(tmp, MAX_LENGTH_SIZE, f_user) != NULL)
+    while (fgets(tmp, MAX_LENGTH_SIZE, gp_file_user) != NULL)
     {
         read_user(userList, tmp);
     }
 
-    fclose(f_user);
+    fclose(gp_file_user);
 
     userList->current = NULL;
 
