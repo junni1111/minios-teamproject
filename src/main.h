@@ -18,8 +18,7 @@
 #define MAX_NAME_SIZE 20
 
 // User
-typedef struct tagUserNode
-{
+typedef struct tagUserNode {
     char name[MAX_NAME_SIZE];
     char dir[MAX_DIRECTORY_SIZE];
     int UID;
@@ -34,8 +33,7 @@ typedef struct tagUserNode
     struct tagUserNode *LinkNode;
 } UserNode;
 
-typedef struct tagUser
-{
+typedef struct tagUser {
     int topUID;
     int topGID;
     UserNode *head;
@@ -44,8 +42,7 @@ typedef struct tagUser
 } UserList;
 
 // Directory
-typedef struct tagDirectoryNode
-{
+typedef struct tagDirectoryNode {
     char name[MAX_NAME_SIZE];
     char type;
     int mode;
@@ -62,21 +59,18 @@ typedef struct tagDirectoryNode
     struct tagDirectoryNode *RightSibling;
 } DirectoryNode;
 
-typedef struct tagDirectoryTree
-{
+typedef struct tagDirectoryTree {
     DirectoryNode *root;
     DirectoryNode *current;
 } DirectoryTree;
 
 // stack using linked list
-typedef struct tagStackNode
-{
+typedef struct tagStackNode {
     char name[MAX_NAME_SIZE];
     struct tagStackNode *LinkNode;
 } StackNode;
 
-typedef struct tagStack
-{
+typedef struct tagStack {
     StackNode *TopNode;
     int cnt;
 } Stack;
@@ -171,4 +165,4 @@ FILE *gp_file_user;
 // global variable
 sem_t semp;
 
-#endif // MAIN_H_
+#endif  // MAIN_H_

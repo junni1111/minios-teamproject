@@ -1,9 +1,9 @@
-#include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-UserList *initialize_user()
-{
+#include "main.h"
+
+UserList *initialize_user() {
     UserList *returnList = (UserList *)malloc(sizeof(UserList));
     UserNode *NewNode = (UserNode *)malloc(sizeof(UserNode));
 
@@ -33,8 +33,7 @@ UserList *initialize_user()
     return returnList;
 }
 
-void write_user(UserList *userList, UserNode *userNode)
-{
+void write_user(UserList *userList, UserNode *userNode) {
     time(&ltime);
     today = localtime(&ltime);
 
@@ -48,14 +47,12 @@ void write_user(UserList *userList, UserNode *userNode)
 
     fprintf(gp_file_user, "%s %d %d %d %d %d %d %d %d %d %s\n", userNode->name, userNode->UID, userNode->GID, userNode->year, userNode->month, userNode->wday, userNode->day, userNode->hour, userNode->minute, userNode->sec, userNode->dir);
 
-    if (userNode->LinkNode != NULL)
-    {
+    if (userNode->LinkNode != NULL) {
         write_user(userList, userNode->LinkNode);
     }
 }
 
-void save_user_list(UserList *userList)
-{
+void save_user_list(UserList *userList) {
     gp_file_user = fopen("./resources/User.txt", "w");
 
     write_user(userList, userList->head);
@@ -63,8 +60,7 @@ void save_user_list(UserList *userList)
     fclose(gp_file_user);
 }
 
-int read_user(UserList *userList, char *tmp)
-{
+int read_user(UserList *userList, char *tmp) {
     UserNode *NewNode = (UserNode *)malloc(sizeof(UserNode));
     char *str;
 
@@ -94,28 +90,23 @@ int read_user(UserList *userList, char *tmp)
     str[strlen(str) - 1] = '\0';
     strncpy(NewNode->dir, str, MAX_DIRECTORY_SIZE);
 
-    if (strcmp(NewNode->name, "root") == 0)
-    {
+    if (strcmp(NewNode->name, "root") == 0) {
         userList->head = NewNode;
         userList->tail = NewNode;
-    }
-    else
-    {
+    } else {
         userList->tail->LinkNode = NewNode;
         userList->tail = NewNode;
     }
     return 0;
 }
 
-UserList *load_user_list()
-{
+UserList *load_user_list() {
     UserList *userList = (UserList *)malloc(sizeof(UserList));
     char tmp[MAX_LENGTH_SIZE];
 
     gp_file_user = fopen("./resources/User.txt", "r");
 
-    while (fgets(tmp, MAX_LENGTH_SIZE, gp_file_user) != NULL)
-    {
+    while (fgets(tmp, MAX_LENGTH_SIZE, gp_file_user) != NULL) {
         read_user(userList, tmp);
     }
 
@@ -126,14 +117,12 @@ UserList *load_user_list()
     return userList;
 }
 
-UserNode *is_exist_user(UserList *userList, char *userName)
-{
+UserNode *is_exist_user(UserList *userList, char *userName) {
     UserNode *returnUser = NULL;
 
     returnUser = userList->head;
 
-    while (returnUser != NULL)
-    {
+    while (returnUser != NULL) {
         if (strcmp(returnUser->name, userName) == 0)
             break;
         returnUser = returnUser->LinkNode;
@@ -142,13 +131,11 @@ UserNode *is_exist_user(UserList *userList, char *userName)
     return returnUser;
 }
 
-char *get_UID(DirectoryNode *dirNode)
-{
+char *get_UID(DirectoryNode *dirNode) {
     UserNode *tmpNode = NULL;
 
     tmpNode = gp_userList->head;
-    while (tmpNode != NULL)
-    {
+    while (tmpNode != NULL) {
         if (tmpNode->UID == dirNode->UID)
             break;
         tmpNode = tmpNode->LinkNode;
@@ -156,13 +143,11 @@ char *get_UID(DirectoryNode *dirNode)
     return tmpNode->name;
 }
 
-char *get_GID(DirectoryNode *dirNode)
-{
+char *get_GID(DirectoryNode *dirNode) {
     UserNode *tmpNode = NULL;
 
     tmpNode = gp_userList->head;
-    while (tmpNode != NULL)
-    {
+    while (tmpNode != NULL) {
         if (tmpNode->GID == dirNode->GID)
             break;
         tmpNode = tmpNode->LinkNode;
@@ -170,77 +155,62 @@ char *get_GID(DirectoryNode *dirNode)
     return tmpNode->name;
 }
 
-int is_node_has_permission(DirectoryNode *dirNode, char o)
-{
+int is_node_has_permission(DirectoryNode *dirNode, char o) {
     if (gp_userList->current->UID == 0)
         return 0;
 
-    if (gp_userList->current->UID == dirNode->UID)
-    {
-        if (o == 'r')
-        {
+    if (gp_userList->current->UID == dirNode->UID) {
+        if (o == 'r') {
             if (dirNode->permission[0] == 0)
                 return -1;
             else
                 return 0;
         }
-        if (o == 'w')
-        {
+        if (o == 'w') {
             if (dirNode->permission[1] == 0)
                 return -1;
             else
                 return 0;
         }
-        if (o == 'x')
-        {
+        if (o == 'x') {
             if (dirNode->permission[2] == 0)
                 return -1;
             else
                 return 0;
         }
-    }
-    else if (gp_userList->current->GID == dirNode->GID)
-    {
-        if (o == 'r')
-        {
+    } else if (gp_userList->current->GID == dirNode->GID) {
+        if (o == 'r') {
             if (dirNode->permission[3] == 0)
                 return -1;
             else
                 return 0;
         }
-        if (o == 'w')
-        {
+        if (o == 'w') {
             if (dirNode->permission[4] == 0)
                 return -1;
             else
                 return 0;
         }
-        if (o == 'x')
-        {
+        if (o == 'x') {
             if (dirNode->permission[5] == 0)
                 return -1;
             else
                 return 0;
         }
-    }
-    else
-    {
-        if (o == 'r')
-        {
+    } else {
+        if (o == 'r') {
             if (dirNode->permission[6] == 0)
                 return -1;
             else
                 return 0;
         }
-        if (o == 'w')
-        {
+        if (o == 'w') {
             if (dirNode->permission[7] == 0)
                 return -1;
             else
                 return 0;
         }
-        if (o == 'x')
-        {
+        if (o == 'x') {
             if (dirNode->permission[8] == 0)
                 return -1;
             else
@@ -250,8 +220,7 @@ int is_node_has_permission(DirectoryNode *dirNode, char o)
     return -1;
 }
 
-void login(UserList *userList, DirectoryTree *p_directoryTree)
-{
+void login(UserList *userList, DirectoryTree *p_directoryTree) {
     UserNode *tmpUser = NULL;
     char userName[MAX_NAME_SIZE];
     char tmp[MAX_DIRECTORY_SIZE];
@@ -259,25 +228,21 @@ void login(UserList *userList, DirectoryTree *p_directoryTree)
     tmpUser = userList->head;
 
     printf("Users: ");
-    while (tmpUser != NULL)
-    {
+    while (tmpUser != NULL) {
         printf("%s ", tmpUser->name);
         tmpUser = tmpUser->LinkNode;
     }
     printf("\n");
 
-    while (1)
-    {
+    while (1) {
         printf("Login as: ");
         fgets(userName, sizeof(userName), stdin);
         userName[strlen(userName) - 1] = '\0';
-        if (strcmp(userName, "exit") == 0)
-        {
+        if (strcmp(userName, "exit") == 0) {
             exit(0);
         }
         tmpUser = is_exist_user(userList, userName);
-        if (tmpUser != NULL)
-        {
+        if (tmpUser != NULL) {
             userList->current = tmpUser;
             break;
         }

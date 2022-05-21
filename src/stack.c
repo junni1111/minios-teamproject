@@ -1,24 +1,21 @@
-#include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "main.h"
+
 // stack function
-int is_empty(Stack *p_directoryStack)
-{
-    if (p_directoryStack->TopNode == NULL)
-    {
+int is_empty(Stack *p_directoryStack) {
+    if (p_directoryStack->TopNode == NULL) {
         return -1;
     }
     return 0;
 }
 
-Stack *initialize_stack()
-{
+Stack *initialize_stack() {
     // variables
     Stack *returnStack = (Stack *)malloc(sizeof(Stack));
 
-    if (returnStack == NULL)
-    {
+    if (returnStack == NULL) {
         printf("error occurred, returnStack.\n");
         return NULL;
     }
@@ -29,18 +26,15 @@ Stack *initialize_stack()
     return returnStack;
 }
 
-int push(Stack *p_directoryStack, char *directoryName)
-{
+int push(Stack *p_directoryStack, char *directoryName) {
     // variables
     StackNode *dirNode = (StackNode *)malloc(sizeof(StackNode));
 
-    if (p_directoryStack == NULL)
-    {
+    if (p_directoryStack == NULL) {
         printf("error occurred, p_directoryStack.\n");
         return -1;
     }
-    if (dirNode == NULL)
-    {
+    if (dirNode == NULL) {
         printf("error occurred, dirNode.\n");
         return -1;
     }
@@ -53,18 +47,15 @@ int push(Stack *p_directoryStack, char *directoryName)
     return 0;
 }
 
-char *pop(Stack *p_directoryStack)
-{
+char *pop(Stack *p_directoryStack) {
     // variables
     StackNode *returnNode = NULL;
     // error
-    if (p_directoryStack == NULL)
-    {
+    if (p_directoryStack == NULL) {
         printf("error occurred, p_directoryStack.\n");
         return NULL;
     }
-    if (is_empty(p_directoryStack) == -1)
-    {
+    if (is_empty(p_directoryStack) == -1) {
         printf("Stack Empty.\n");
         return NULL;
     }

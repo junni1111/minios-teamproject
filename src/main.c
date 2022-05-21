@@ -1,9 +1,9 @@
-#include "./main.h"
+#include "main.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
-int main()
-{
+int main() {
     char command[50];
 
     gp_directoryTree = load_directory();
@@ -14,8 +14,7 @@ int main()
     print_start();
     save_user_list(gp_userList);
 
-    while (1)
-    {
+    while (1) {
         print_head(gp_directoryTree, gp_directoryStack);
         fgets(command, sizeof(command), stdin);
         command[strlen(command) - 1] = '\0';
