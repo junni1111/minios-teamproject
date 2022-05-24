@@ -4,22 +4,22 @@
 #include "main.h"
 
 // utility
-int mode_to_permission(DirectoryNode *dirNode) {
+int mode_to_permission(DirectoryNode *p_directoryNode) {
     char buf[4];
     int tmp;
     int j;
 
     for (int i = 0; i < 9; i++)
-        dirNode->permission[i] = 0;
+        p_directoryNode->permission[i] = 0;
 
-    sprintf(buf, "%d", dirNode->mode);
+    sprintf(buf, "%d", p_directoryNode->mode);
 
     for (int i = 0; i < 3; i++) {
         tmp = buf[i] - '0';
         j = 2;
 
         while (tmp != 0) {
-            dirNode->permission[3 * i + j] = tmp % 2;
+            p_directoryNode->permission[3 * i + j] = tmp % 2;
             tmp /= 2;
             j--;
         }
@@ -28,12 +28,12 @@ int mode_to_permission(DirectoryNode *dirNode) {
     return 0;
 }
 
-void print_permission(DirectoryNode *dirNode) {
+void print_permission(DirectoryNode *p_directoryNode) {
     char rwx[4] = "rwx";
 
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-            if (dirNode->permission[3 * i + j] == 1)
+            if (p_directoryNode->permission[3 * i + j] == 1)
                 printf("%c", rwx[j]);
             else
                 printf("-");
@@ -41,22 +41,22 @@ void print_permission(DirectoryNode *dirNode) {
     }
 }
 
-void destory_node(DirectoryNode *dirNode) {
-    free(dirNode);
+void destory_node(DirectoryNode *p_directoryNode) {
+    free(p_directoryNode);
 }
 
-void destory_directory(DirectoryNode *dirNode) {
-    if (dirNode->RightSibling != NULL) {
-        destory_directory(dirNode->RightSibling);
+void destory_directory(DirectoryNode *p_directoryNode) {
+    if (p_directoryNode->RightSibling != NULL) {
+        destory_directory(p_directoryNode->RightSibling);
     }
-    if (dirNode->LeftChild != NULL) {
-        destory_directory(dirNode->LeftChild);
+    if (p_directoryNode->LeftChild != NULL) {
+        destory_directory(p_directoryNode->LeftChild);
     }
 
-    dirNode->LeftChild = NULL;
-    dirNode->RightSibling = NULL;
+    p_directoryNode->LeftChild = NULL;
+    p_directoryNode->RightSibling = NULL;
 
-    destory_node(dirNode);
+    destory_node(p_directoryNode);
 }
 
 DirectoryNode *is_exist_directory(DirectoryTree *p_directoryTree, char *directoryName, char type) {
@@ -93,12 +93,12 @@ char *get_directory(char *directoryPath) {
 }
 
 // save & load
-void get_directory_path(DirectoryTree *p_directoryTree, DirectoryNode *dirNode, Stack *p_directoryStack) {
+void get_directory_path(DirectoryTree *p_directoryTree, DirectoryNode *p_directoryNode, Stack *p_directoryStack) {
     // variables
     DirectoryNode *tmpNode = NULL;
     char tmp[MAX_DIRECTORY_SIZE] = "";
 
-    tmpNode = dirNode->Parent;
+    tmpNode = p_directoryNode->Parent;
 
     if (tmpNode == p_directoryTree->root) {
         strcpy(tmp, "/");
@@ -118,20 +118,20 @@ void get_directory_path(DirectoryTree *p_directoryTree, DirectoryNode *dirNode, 
     fprintf(gp_file_directory, " %s\n", tmp);
 }
 
-void write_directory_node(DirectoryTree *p_directoryTree, DirectoryNode *dirNode, Stack *p_directoryStack) {
-    fprintf(gp_file_directory, "%s %c %d ", dirNode->name, dirNode->type, dirNode->mode);
-    fprintf(gp_file_directory, "%d %d %d %d %d %d %d", dirNode->SIZE, dirNode->UID, dirNode->GID, dirNode->month, dirNode->day, dirNode->hour, dirNode->minute);
+void write_directory_node(DirectoryTree *p_directoryTree, DirectoryNode *p_directoryNode, Stack *p_directoryStack) {
+    fprintf(gp_file_directory, "%s %c %d ", p_directoryNode->name, p_directoryNode->type, p_directoryNode->mode);
+    fprintf(gp_file_directory, "%d %d %d %d %d %d %d", p_directoryNode->SIZE, p_directoryNode->UID, p_directoryNode->GID, p_directoryNode->month, p_directoryNode->day, p_directoryNode->hour, p_directoryNode->minute);
 
-    if (dirNode == p_directoryTree->root)
+    if (p_directoryNode == p_directoryTree->root)
         fprintf(gp_file_directory, "\n");
     else
-        get_directory_path(p_directoryTree, dirNode, p_directoryStack);
+        get_directory_path(p_directoryTree, p_directoryNode, p_directoryStack);
 
-    if (dirNode->RightSibling != NULL) {
-        write_directory_node(p_directoryTree, dirNode->RightSibling, p_directoryStack);
+    if (p_directoryNode->RightSibling != NULL) {
+        write_directory_node(p_directoryTree, p_directoryNode->RightSibling, p_directoryStack);
     }
-    if (dirNode->LeftChild != NULL) {
-        write_directory_node(p_directoryTree, dirNode->LeftChild, p_directoryStack);
+    if (p_directoryNode->LeftChild != NULL) {
+        write_directory_node(p_directoryTree, p_directoryNode->LeftChild, p_directoryStack);
     }
 }
 
@@ -723,15 +723,15 @@ int change_mode(DirectoryTree *p_directoryTree, int mode, char *directoryName) {
     return 0;
 }
 
-void change_all_mode(DirectoryNode *dirNode, int mode) {
-    if (dirNode->RightSibling != NULL) {
-        change_all_mode(dirNode->RightSibling, mode);
+void change_all_mode(DirectoryNode *p_directoryNode, int mode) {
+    if (p_directoryNode->RightSibling != NULL) {
+        change_all_mode(p_directoryNode->RightSibling, mode);
     }
-    if (dirNode->LeftChild != NULL) {
-        change_all_mode(dirNode->LeftChild, mode);
+    if (p_directoryNode->LeftChild != NULL) {
+        change_all_mode(p_directoryNode->LeftChild, mode);
     }
-    dirNode->mode = mode;
-    mode_to_permission(dirNode);
+    p_directoryNode->mode = mode;
+    mode_to_permission(p_directoryNode);
 }
 
 // chown
@@ -779,19 +779,19 @@ int change_owner(DirectoryTree *p_directoryTree, char *userName, char *directory
     return 0;
 }
 
-void change_all_owner(DirectoryNode *dirNode, char *userName) {
+void change_all_owner(DirectoryNode *p_directoryNode, char *userName) {
     UserNode *tmpUser = NULL;
 
     tmpUser = is_exist_user(gp_userList, userName);
 
-    if (dirNode->RightSibling != NULL) {
-        change_all_owner(dirNode->RightSibling, userName);
+    if (p_directoryNode->RightSibling != NULL) {
+        change_all_owner(p_directoryNode->RightSibling, userName);
     }
-    if (dirNode->LeftChild != NULL) {
-        change_all_owner(dirNode->LeftChild, userName);
+    if (p_directoryNode->LeftChild != NULL) {
+        change_all_owner(p_directoryNode->LeftChild, userName);
     }
-    dirNode->UID = tmpUser->UID;
-    dirNode->GID = tmpUser->GID;
+    p_directoryNode->UID = tmpUser->UID;
+    p_directoryNode->GID = tmpUser->GID;
 }
 
 // find

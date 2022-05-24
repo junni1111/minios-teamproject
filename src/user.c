@@ -33,34 +33,34 @@ UserList *initialize_user() {
     return returnList;
 }
 
-void write_user(UserList *userList, UserNode *userNode) {
+void write_user(UserList *p_userList, UserNode *userNode) {
     time(&ltime);
     today = localtime(&ltime);
 
-    userList->current->year = today->tm_year + 1900;
-    userList->current->month = today->tm_mon + 1;
-    userList->current->wday = today->tm_wday;
-    userList->current->day = today->tm_mday;
-    userList->current->hour = today->tm_hour;
-    userList->current->minute = today->tm_min;
-    userList->current->sec = today->tm_sec;
+    p_userList->current->year = today->tm_year + 1900;
+    p_userList->current->month = today->tm_mon + 1;
+    p_userList->current->wday = today->tm_wday;
+    p_userList->current->day = today->tm_mday;
+    p_userList->current->hour = today->tm_hour;
+    p_userList->current->minute = today->tm_min;
+    p_userList->current->sec = today->tm_sec;
 
     fprintf(gp_file_user, "%s %d %d %d %d %d %d %d %d %d %s\n", userNode->name, userNode->UID, userNode->GID, userNode->year, userNode->month, userNode->wday, userNode->day, userNode->hour, userNode->minute, userNode->sec, userNode->dir);
 
     if (userNode->LinkNode != NULL) {
-        write_user(userList, userNode->LinkNode);
+        write_user(p_userList, userNode->LinkNode);
     }
 }
 
-void save_user_list(UserList *userList) {
+void save_user_list(UserList *p_userList) {
     gp_file_user = fopen("./resources/User.txt", "w");
 
-    write_user(userList, userList->head);
+    write_user(p_userList, p_userList->head);
 
     fclose(gp_file_user);
 }
 
-int read_user(UserList *userList, char *tmp) {
+int read_user(UserList *p_userList, char *tmp) {
     UserNode *NewNode = (UserNode *)malloc(sizeof(UserNode));
     char *str;
 
@@ -91,36 +91,36 @@ int read_user(UserList *userList, char *tmp) {
     strncpy(NewNode->dir, str, MAX_DIRECTORY_SIZE);
 
     if (strcmp(NewNode->name, "root") == 0) {
-        userList->head = NewNode;
-        userList->tail = NewNode;
+        p_userList->head = NewNode;
+        p_userList->tail = NewNode;
     } else {
-        userList->tail->LinkNode = NewNode;
-        userList->tail = NewNode;
+        p_userList->tail->LinkNode = NewNode;
+        p_userList->tail = NewNode;
     }
     return 0;
 }
 
 UserList *load_user_list() {
-    UserList *userList = (UserList *)malloc(sizeof(UserList));
+    UserList *p_userList = (UserList *)malloc(sizeof(UserList));
     char tmp[MAX_LENGTH_SIZE];
 
     gp_file_user = fopen("./resources/User.txt", "r");
 
     while (fgets(tmp, MAX_LENGTH_SIZE, gp_file_user) != NULL) {
-        read_user(userList, tmp);
+        read_user(p_userList, tmp);
     }
 
     fclose(gp_file_user);
 
-    userList->current = NULL;
+    p_userList->current = NULL;
 
-    return userList;
+    return p_userList;
 }
 
-UserNode *is_exist_user(UserList *userList, char *userName) {
+UserNode *is_exist_user(UserList *p_userList, char *userName) {
     UserNode *returnUser = NULL;
 
-    returnUser = userList->head;
+    returnUser = p_userList->head;
 
     while (returnUser != NULL) {
         if (strcmp(returnUser->name, userName) == 0)
@@ -131,87 +131,87 @@ UserNode *is_exist_user(UserList *userList, char *userName) {
     return returnUser;
 }
 
-char *get_UID(DirectoryNode *dirNode) {
+char *get_UID(DirectoryNode *p_directoryNode) {
     UserNode *tmpNode = NULL;
 
     tmpNode = gp_userList->head;
     while (tmpNode != NULL) {
-        if (tmpNode->UID == dirNode->UID)
+        if (tmpNode->UID == p_directoryNode->UID)
             break;
         tmpNode = tmpNode->LinkNode;
     }
     return tmpNode->name;
 }
 
-char *get_GID(DirectoryNode *dirNode) {
+char *get_GID(DirectoryNode *p_directoryNode) {
     UserNode *tmpNode = NULL;
 
     tmpNode = gp_userList->head;
     while (tmpNode != NULL) {
-        if (tmpNode->GID == dirNode->GID)
+        if (tmpNode->GID == p_directoryNode->GID)
             break;
         tmpNode = tmpNode->LinkNode;
     }
     return tmpNode->name;
 }
 
-int is_node_has_permission(DirectoryNode *dirNode, char o) {
+int is_node_has_permission(DirectoryNode *p_directoryNode, char o) {
     if (gp_userList->current->UID == 0)
         return 0;
 
-    if (gp_userList->current->UID == dirNode->UID) {
+    if (gp_userList->current->UID == p_directoryNode->UID) {
         if (o == 'r') {
-            if (dirNode->permission[0] == 0)
+            if (p_directoryNode->permission[0] == 0)
                 return -1;
             else
                 return 0;
         }
         if (o == 'w') {
-            if (dirNode->permission[1] == 0)
+            if (p_directoryNode->permission[1] == 0)
                 return -1;
             else
                 return 0;
         }
         if (o == 'x') {
-            if (dirNode->permission[2] == 0)
+            if (p_directoryNode->permission[2] == 0)
                 return -1;
             else
                 return 0;
         }
-    } else if (gp_userList->current->GID == dirNode->GID) {
+    } else if (gp_userList->current->GID == p_directoryNode->GID) {
         if (o == 'r') {
-            if (dirNode->permission[3] == 0)
+            if (p_directoryNode->permission[3] == 0)
                 return -1;
             else
                 return 0;
         }
         if (o == 'w') {
-            if (dirNode->permission[4] == 0)
+            if (p_directoryNode->permission[4] == 0)
                 return -1;
             else
                 return 0;
         }
         if (o == 'x') {
-            if (dirNode->permission[5] == 0)
+            if (p_directoryNode->permission[5] == 0)
                 return -1;
             else
                 return 0;
         }
     } else {
         if (o == 'r') {
-            if (dirNode->permission[6] == 0)
+            if (p_directoryNode->permission[6] == 0)
                 return -1;
             else
                 return 0;
         }
         if (o == 'w') {
-            if (dirNode->permission[7] == 0)
+            if (p_directoryNode->permission[7] == 0)
                 return -1;
             else
                 return 0;
         }
         if (o == 'x') {
-            if (dirNode->permission[8] == 0)
+            if (p_directoryNode->permission[8] == 0)
                 return -1;
             else
                 return 0;
@@ -220,12 +220,12 @@ int is_node_has_permission(DirectoryNode *dirNode, char o) {
     return -1;
 }
 
-void login(UserList *userList, DirectoryTree *p_directoryTree) {
+void login(UserList *p_userList, DirectoryTree *p_directoryTree) {
     UserNode *tmpUser = NULL;
     char userName[MAX_NAME_SIZE];
     char tmp[MAX_DIRECTORY_SIZE];
 
-    tmpUser = userList->head;
+    tmpUser = p_userList->head;
 
     printf("Users: ");
     while (tmpUser != NULL) {
@@ -241,14 +241,14 @@ void login(UserList *userList, DirectoryTree *p_directoryTree) {
         if (strcmp(userName, "exit") == 0) {
             exit(0);
         }
-        tmpUser = is_exist_user(userList, userName);
+        tmpUser = is_exist_user(p_userList, userName);
         if (tmpUser != NULL) {
-            userList->current = tmpUser;
+            p_userList->current = tmpUser;
             break;
         }
         printf("'%s' 유저가 존재하지 않습니다\n", userName);
     }
 
-    strcpy(tmp, userList->current->dir);
+    strcpy(tmp, p_userList->current->dir);
     move_directory_path(p_directoryTree, tmp);
 }

@@ -28,21 +28,21 @@ Stack *initialize_stack() {
 
 int push(Stack *p_directoryStack, char *directoryName) {
     // variables
-    StackNode *dirNode = (StackNode *)malloc(sizeof(StackNode));
+    StackNode *p_directoryNode = (StackNode *)malloc(sizeof(StackNode));
 
     if (p_directoryStack == NULL) {
         printf("error occurred, p_directoryStack.\n");
         return -1;
     }
-    if (dirNode == NULL) {
-        printf("error occurred, dirNode.\n");
+    if (p_directoryNode == NULL) {
+        printf("error occurred, p_directoryNode.\n");
         return -1;
     }
-    // set dirNode
-    strncpy(dirNode->name, directoryName, MAX_NAME_SIZE);
-    dirNode->LinkNode = p_directoryStack->TopNode;
+    // set p_directoryNode
+    strncpy(p_directoryNode->name, directoryName, MAX_NAME_SIZE);
+    p_directoryNode->LinkNode = p_directoryStack->TopNode;
     // set p_directoryStack
-    p_directoryStack->TopNode = dirNode;
+    p_directoryStack->TopNode = p_directoryNode;
 
     return 0;
 }

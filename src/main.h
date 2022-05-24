@@ -1,5 +1,4 @@
 #include <pthread.h>
-#include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -102,16 +101,16 @@ void print_head(DirectoryTree *p_directoryTree, Stack *p_directoryStack);
 
 // directory.c
 // utility
-int mode_to_permission(DirectoryNode *dirNode);
-void print_permission(DirectoryNode *dirNode);
-void destory_node(DirectoryNode *dirNode);
-void destory_directory(DirectoryNode *dirNode);
+int mode_to_permission(DirectoryNode *p_directoryNode);
+void print_permission(DirectoryNode *p_directoryNode);
+void destory_node(DirectoryNode *p_directoryNode);
+void destory_directory(DirectoryNode *p_directoryNode);
 DirectoryNode *is_exist_directory(DirectoryTree *p_directoryTree, char *directoryName, char type);
 char *get_directory(char *directoryPath);
 
 // save & load
-void get_directory_path(DirectoryTree *p_directoryTree, DirectoryNode *dirNode, Stack *p_directoryStack);
-void write_directory_node(DirectoryTree *p_directoryTree, DirectoryNode *dirNode, Stack *p_directoryStack);
+void get_directory_path(DirectoryTree *p_directoryTree, DirectoryNode *p_directoryNode, Stack *p_directoryStack);
+void write_directory_node(DirectoryTree *p_directoryTree, DirectoryNode *p_directoryNode, Stack *p_directoryStack);
 void save_directory(DirectoryTree *p_directoryTree, Stack *p_directoryStack);
 int read_directory_node(DirectoryTree *p_directoryTree, char *tmp);
 DirectoryTree *load_directory();
@@ -132,25 +131,25 @@ int list_directory(DirectoryTree *p_directoryTree, int a, int l);
 int concatenate(DirectoryTree *p_directoryTree, char *fName, int o);
 // chmod
 int change_mode(DirectoryTree *p_directoryTree, int mode, char *directoryName);
-void change_all_mode(DirectoryNode *dirNode, int mode);
+void change_all_mode(DirectoryNode *p_directoryNode, int mode);
 // chown
 int change_owner(DirectoryTree *p_directoryTree, char *userName, char *directoryName);
-void change_all_owner(DirectoryNode *dirNode, char *userName);
+void change_all_owner(DirectoryNode *p_directoryNode, char *userName);
 // find
 int read_directory(DirectoryTree *p_directoryTree, char *tmp, char *directoryName, int o);
 void find_directory(DirectoryTree *p_directoryTree, char *directoryName, int o);
 
 // user.c
 UserList *initialize_user();
-void write_user(UserList *userList, UserNode *userNode);
-void save_user_list(UserList *userList);
-int read_user(UserList *userList, char *tmp);
+void write_user(UserList *p_userList, UserNode *userNode);
+void save_user_list(UserList *p_userList);
+int read_user(UserList *p_userList, char *tmp);
 UserList *load_user_list();
-UserNode *is_exist_user(UserList *userList, char *userName);
-char *get_UID(DirectoryNode *dirNode);
-char *get_GID(DirectoryNode *dirNode);
-int is_node_has_permission(DirectoryNode *dirNode, char o);
-void login(UserList *userList, DirectoryTree *p_directoryTree);
+UserNode *is_exist_user(UserList *p_userList, char *userName);
+char *get_UID(DirectoryNode *p_directoryNode);
+char *get_GID(DirectoryNode *p_directoryNode);
+int is_node_has_permission(DirectoryNode *p_directoryNode, char o);
+void login(UserList *p_userList, DirectoryTree *p_directoryTree);
 
 // stack.c
 Stack *initialize_stack();
@@ -168,11 +167,5 @@ Stack *gp_directoryStack;
 UserList *gp_userList;
 FILE *gp_file_directory;
 FILE *gp_file_user;
-
-// global variable
-sem_t semp;
-
-// thread.c
-void *test(void *data);
 
 #endif  // MAIN_H_
