@@ -993,7 +993,9 @@ void instruction(DirectoryTree *p_directoryTree, char *command) {
     }
     str = strtok(command, " ");
 
-    if (strcmp(str, "mkdir") == 0) {
+    if (strcmp(str, "clear") == 0 || strcmp(str, "cls") == 0) {
+        system("clear");
+    } else if (strcmp(str, "mkdir") == 0) {
         str = strtok(NULL, " ");
         val = mkdir(p_directoryTree, str);
         if (val == 0) {
@@ -1023,12 +1025,6 @@ void instruction(DirectoryTree *p_directoryTree, char *command) {
     } else if (strcmp(str, "chmod") == 0) {
         str = strtok(NULL, " ");
         val = chmod(p_directoryTree, str);
-        if (val == 0) {
-            save_directory(p_directoryTree, gp_directoryStack);
-        }
-    } else if (strcmp(str, "chown") == 0) {
-        str = strtok(NULL, " ");
-        val = chown_(p_directoryTree, str);
         if (val == 0) {
             save_directory(p_directoryTree, gp_directoryStack);
         }
