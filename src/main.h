@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +17,7 @@
 #define MAX_LENGTH_SIZE 200
 #define MAX_DIRECTORY_SIZE 50
 #define MAX_NAME_SIZE 20
+#define MAX_THREAD_SIZE 50
 
 // User
 typedef struct tagUserNode {
@@ -74,6 +76,11 @@ typedef struct tagStack {
     StackNode *TopNode;
     int cnt;
 } Stack;
+
+typedef struct tagThread {
+    DirectoryTree *p_directoryTree;
+    char *command;
+} ThreadArg;
 
 // time
 time_t ltime;
@@ -164,5 +171,8 @@ FILE *gp_file_user;
 
 // global variable
 sem_t semp;
+
+// thread.c
+void *test(void *data);
 
 #endif  // MAIN_H_

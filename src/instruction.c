@@ -1,17 +1,49 @@
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "main.h"
+
+void *thread_routine_make_directory(void *arg) {
+    ThreadArg *p_threadArg = ((ThreadArg *)arg);
+    DirectoryTree *p_directoryTree = p_threadArg->p_directoryTree;
+    char *command = p_threadArg->command;
+
+    DirectoryNode *tmpNode = p_directoryTree->current;
+    char tmp[MAX_DIRECTORY_SIZE];
+    int val;
+
+    strncpy(tmp, command, MAX_DIRECTORY_SIZE);
+    if (strstr(command, "/") == NULL) {
+        make_directory(p_directoryTree, command, 'd');
+    } else {
+        char *p_get_directory = get_directory(command);
+        val = move_directory_path(p_directoryTree, p_get_directory);
+        if (val != 0) {
+            printf("mkdir: '%s': 그런 파일이나 디렉터리가 없습니다\n", p_get_directory);
+        } else {
+            char *str = strtok(tmp, "/");
+            char *p_directory_name;
+            while (str != NULL) {
+                p_directory_name = str;
+                str = strtok(NULL, "/");
+            }
+            make_directory(p_directoryTree, p_directory_name, 'd');
+            p_directoryTree->current = tmpNode;
+        }
+    }
+
+    pthread_exit(NULL);
+}
 
 // command
 int mkdir(DirectoryTree *p_directoryTree, char *command) {
     DirectoryNode *tmpNode = NULL;
     char *str;
-    char tmp[MAX_DIRECTORY_SIZE];
-    char tmp2[MAX_DIRECTORY_SIZE];
-    char tmp3[MAX_DIRECTORY_SIZE];
     int val;
     int tmpMode;
+
     if (command == NULL) {
         printf("mkdir: 잘못된 연산자\n");
         printf("Try 'mkdir --help' for more information.\n");
@@ -88,120 +120,23 @@ int mkdir(DirectoryTree *p_directoryTree, char *command) {
         }
     } else {
         str = strtok(NULL, " ");
-        if (str == NULL) {
-            strncpy(tmp, command, MAX_DIRECTORY_SIZE);
-            if (strstr(command, "/") == NULL) {
-                make_directory(p_directoryTree, command, 'd');
-                return 0;
-            } else {
-                strncpy(tmp2, get_directory(command), MAX_DIRECTORY_SIZE);
-                val = move_directory_path(p_directoryTree, tmp2);
-                if (val != 0) {
-                    printf("mkdir: '%s': 그런 파일이나 디렉터리가 없습니다\n", tmp2);
-                    return -1;
-                }
-                str = strtok(tmp, "/");
-                while (str != NULL) {
-                    strncpy(tmp3, str, MAX_NAME_SIZE);
-                    str = strtok(NULL, "/");
-                }
-                make_directory(p_directoryTree, tmp3, 'd');
-                p_directoryTree->current = tmpNode;
-            }
-        } else {
-            DirectoryNode *NewNode = (DirectoryNode *)malloc(sizeof(DirectoryNode));
-            DirectoryNode *tmpNode2 = NULL;
-            int fd[2];
-            int state = 0;
-            pid_t pid;
+        int t_count = 0;
+        pthread_t t_command[MAX_THREAD_SIZE];
+        ThreadArg p_threadArg[MAX_THREAD_SIZE];
+        p_threadArg[t_count].p_directoryTree = p_directoryTree;
+        p_threadArg[t_count++].command = command;
 
-            state = pipe(fd);
-            if (state == -1) {
-                printf("pipe() error\n");
-                return -1;
-            }
+        while (str != NULL) {
+            p_threadArg[t_count].p_directoryTree = p_directoryTree;
+            p_threadArg[t_count++].command = str;
+            str = strtok(NULL, " ");
+        }
 
-            state = sem_init(&semp, 1, 1);
-            write(fd[0], NewNode, sizeof(DirectoryNode));
-            pid = fork();
-            if (pid == 0) {
-                sleep(0.1);
-                sem_wait(&semp);
-                read(fd[1], NewNode, sizeof(DirectoryNode));
-                // get time
-                time(&ltime);
-                today = localtime(&ltime);
-
-                // initialize NewNode
-                NewNode->LeftChild = NULL;
-                NewNode->RightSibling = NULL;
-
-                // set NewNode
-                strncpy(NewNode->name, str, MAX_NAME_SIZE);
-                if (str[0] == '.') {
-                    NewNode->type = 'd';
-                    // rwx------
-                    NewNode->mode = 700;
-                    NewNode->SIZE = 4096;
-                } else {
-                    NewNode->type = 'd';
-                    // rwxr-xr-x
-                    NewNode->mode = 755;
-                    NewNode->SIZE = 4096;
-                }
-                mode_to_permission(NewNode);
-                NewNode->UID = gp_userList->current->UID;
-                NewNode->GID = gp_userList->current->GID;
-                NewNode->month = today->tm_mon + 1;
-                NewNode->day = today->tm_mday;
-                NewNode->hour = today->tm_hour;
-                NewNode->minute = today->tm_min;
-                NewNode->Parent = NULL;
-
-                write(fd[1], NewNode, sizeof(DirectoryNode));
-                sem_post(&semp);
-                exit(0);
-            } else {
-                make_directory(p_directoryTree, command, 'd');
-                sleep(0.1);
-                sem_wait(&semp);
-                read(fd[0], NewNode, sizeof(DirectoryNode));
-                if (is_node_has_permission(p_directoryTree->current, 'w') != 0) {
-                    printf("mkdir: '%s' 디렉터리를 만들 수 없습니다: 허가 거부\n", NewNode->name);
-                    free(NewNode);
-                    return -1;
-                }
-                if (strcmp(NewNode->name, ".") == 0 || strcmp(NewNode->name, "..") == 0) {
-                    printf("mkdir: '%s' 디렉터리를 만들 수 없습니다\n", NewNode->name);
-                    free(NewNode);
-                    return -1;
-                }
-                tmpNode = is_exist_directory(p_directoryTree, NewNode->name, 'd');
-                if (tmpNode != NULL && tmpNode->type == 'd') {
-                    printf("mkdir: '%s' 디렉터리를 만들 수 없습니다: 파일이 존재합니다\n", NewNode->name);
-                    free(NewNode);
-                    return -1;
-                }
-
-                NewNode->Parent = p_directoryTree->current;
-
-                if (p_directoryTree->current->LeftChild == NULL) {
-                    p_directoryTree->current->LeftChild = NewNode;
-                } else {
-                    tmpNode = p_directoryTree->current->LeftChild;
-
-                    while (tmpNode->RightSibling != NULL) {
-                        tmpNode = tmpNode->RightSibling;
-                    }
-                    tmpNode->RightSibling = NewNode;
-                }
-
-                sem_post(&semp);
-            }
-            sem_destroy(&semp);
+        for (int i = 0; i < t_count; i++) {
+            pthread_create(&t_command[i], NULL, thread_routine_make_directory, (void *)&p_threadArg[i]);
+            pthread_join(t_command[i], NULL);
         }
     }
-
     return 0;
 }
 
