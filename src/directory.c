@@ -264,7 +264,8 @@ int make_new(DirectoryTree *p_directoryTree, char *directoryName, char type, cha
     }
     tmpNode = is_exist_directory(p_directoryTree, directoryName, type);
     if (tmpNode != NULL) {
-        printf("mkdir: '%s' 디렉터리를 만들 수 없습니다: 파일이 존재합니다\n", directoryName);
+        printf("%s", type == 'd' ? "mkdir" : "touch");
+        printf(": '%s' 디렉터리를 만들 수 없습니다: 파일이 존재합니다\n", directoryName);
         free(NewNode);
         return -1;
     }
@@ -300,10 +301,6 @@ int make_new(DirectoryTree *p_directoryTree, char *directoryName, char type, cha
             if (strlen(additionalValue) == 3) {
                 NewNode->mode = atoi(additionalValue);
             }
-        } else {
-            if (additionalValue[0] == '1') {
-                NewNode->mode = 755;
-            }
         }
     }
 
@@ -315,9 +312,6 @@ int make_new(DirectoryTree *p_directoryTree, char *directoryName, char type, cha
     NewNode->hour = today->tm_hour;
     NewNode->minute = today->tm_min;
     NewNode->Parent = p_directoryTree->current;
-
-    if (type == 'f' && strlen(additionalValue) > 1) {
-    }
 
     if (p_directoryTree->current->LeftChild == NULL) {
         p_directoryTree->current->LeftChild = NewNode;

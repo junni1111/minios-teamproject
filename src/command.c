@@ -31,7 +31,6 @@ int mkdir(DirectoryTree *p_directoryTree, char *command) {
             }
 
             while (str != NULL) {
-                printf("%s : str\n", str);
                 p_threadArg[t_count].p_directoryTree = p_directoryTree;
                 p_threadArg[t_count].additionalValue = ".";
                 p_threadArg[t_count++].command = str;
@@ -100,7 +99,7 @@ int mkdir(DirectoryTree *p_directoryTree, char *command) {
         }
     }
 
-    for (int i = 0; i < t_count; i++) {
+    for (int i = 0; i < t_count; i++) {  // 작업에 따라 담아 놓은 스레드 한번에 실행
         pthread_create(&t_command[i], NULL, thread_routine_make_directory, (void *)&p_threadArg[i]);
         pthread_join(t_command[i], NULL);
     }
@@ -124,87 +123,78 @@ int touch(DirectoryTree *p_directoryTree, char *command) {
     ThreadArg p_threadArg[MAX_THREAD_SIZE];
     tmpNode = p_directoryTree->current;
     if (command[0] == '-') {
-        if (strcmp(command, "-p") == 0) {
+        if (strcmp(command, "-t") == 0) {
             str = strtok(NULL, " ");
             if (str == NULL) {
-                printf("mkdir: 잘못된 연산자\n");
-                printf("Try 'mkdir --help' for more information.\n");
+                printf("touch: 잘못된 연산자\n");
+                printf("Try 'touch --help' for more information.\n");
                 return -1;
             }
-            if (strncmp(str, "/", 1) == 0) {
-                p_directoryTree->current = p_directoryTree->root;
-            }
-            str = strtok(str, "/");
+
+            char *time = str;
+            str = strtok(NULL, " ");
+
             while (str != NULL) {
-                isDirectoryExist = move_current_tree(p_directoryTree, str);
-                if (isDirectoryExist != 0) {
-                    make_new(p_directoryTree, str, 'd', "755");
-                    move_current_tree(p_directoryTree, str);
-                }
-                str = strtok(NULL, "/");
+                p_threadArg[t_count].p_directoryTree = p_directoryTree;
+                p_threadArg[t_count].additionalValue = time;
+                p_threadArg[t_count++].command = str;
+                str = strtok(NULL, " ");
             }
+
             p_directoryTree->current = tmpNode;
         } else if (strcmp(command, "-m") == 0) {
             str = strtok(NULL, " ");
             if (str == NULL) {
-                printf("mkdir: 잘못된 연산자\n");
-                printf("Try 'mkdir --help' for more information.\n");
+                printf("touch: 잘못된 연산자\n");
+                printf("Try 'touch --help' for more information.\n");
                 return -1;
             }
-            if (str[0] - '0' < 8 && str[1] - '0' < 8 && str[2] - '0' < 8 && strlen(str) == 3) {
-                tmpMode = atoi(str);
+
+            while (str != NULL) {
+                p_threadArg[t_count].p_directoryTree = p_directoryTree;
+                p_threadArg[t_count].additionalValue = "M";
+                p_threadArg[t_count++].command = str;
                 str = strtok(NULL, " ");
-                if (str == NULL) {
-                    printf("mkdir: 잘못된 연산자\n");
-                    printf("Try 'mkdir --help' for more information.\n");
-                    return -1;
-                }
-                isDirectoryExist = make_new(p_directoryTree, str, 'd', NULL);
-                if (isDirectoryExist == 0) {
-                    tmpNode = is_exist_directory(p_directoryTree, str, 'd');
-                    tmpNode->mode = tmpMode;
-                    mode_to_permission(tmpNode);
-                }
-            } else {
-                printf("mkdir: 잘못된 모드: '%s'\n", str);
-                printf("Try 'mkdir --help' for more information.\n");
-                return -1;
             }
+
+            p_directoryTree->current = tmpNode;
         } else if (strcmp(command, "--help") == 0) {
-            printf("사용법: mkdir [옵션]... 디렉터리...\n");
-            printf("  Create the DIRECTORY(ies), if they do not already exists.\n\n");
+            printf("사용법: touch [옵션]... 파일...\n");
+            printf("  Create the FILE(ies), if they do not already exists.\n\n");
             printf("  Options:\n");
-            printf("    -m, --mode=MODE\t set file mode (as in chmod)\n");
-            printf("    -p, --parents  \t no error if existing, make parent directories as needed\n");
+            printf("    -t, --time=WORD\t chage the specified time\n");
+            printf("    -m,   \t change only modification time\n");
             printf("        --help\t 이 도움말을 표시하고 끝냅니다\n");
             return -1;
         } else {
             str = strtok(command, "-");
             if (str == NULL) {
-                printf("mkdir: 잘못된 연산자\n");
-                printf("Try 'mkdir --help' for more information.\n");
+                printf("touch: 잘못된 연산자\n");
+                printf("Try 'touch --help' for more information.\n");
                 return -1;
             } else {
-                printf("mkdir: 부적절한 옵션 -- '%s'\n", str);
-                printf("Try 'mkdir --help' for more information.\n");
+                printf("touch: 부적절한 옵션 -- '%s'\n", str);
+                printf("Try 'touch --help' for more information.\n");
                 return -1;
             }
         }
     } else {
         str = strtok(NULL, " ");
         p_threadArg[t_count].p_directoryTree = p_directoryTree;
+        p_threadArg[t_count].additionalValue = NULL;
         p_threadArg[t_count++].command = command;
 
         while (str != NULL) {
             p_threadArg[t_count].p_directoryTree = p_directoryTree;
+            p_threadArg[t_count].additionalValue = NULL;
             p_threadArg[t_count++].command = str;
             str = strtok(NULL, " ");
         }
+    }
 
-        for (int i = 0; i < t_count; i++) {
-            pthread_create(&t_command[i], NULL, thread_routine_touch, (void *)&p_threadArg[i]);
-            pthread_join(t_command[i], NULL);
-        }
+    for (int i = 0; i < t_count; i++) {
+        pthread_create(&t_command[i], NULL, thread_routine_touch, (void *)&p_threadArg[i]);
+        pthread_join(t_command[i], NULL);
     }
     return 0;
 }
