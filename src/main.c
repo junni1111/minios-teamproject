@@ -18,7 +18,7 @@ int main() {
         print_head(gp_directoryTree, gp_directoryStack);
         fgets(command, sizeof(command), stdin);
         command[strlen(command) - 1] = '\0';
-        instruction(gp_directoryTree, command);
+        init(gp_directoryTree, command);
     }
 
     return 0;

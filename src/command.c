@@ -5,43 +5,214 @@
 
 #include "main.h"
 
-void *thread_routine_make_directory(void *arg) {
-    ThreadArg *p_threadArg = ((ThreadArg *)arg);
-    DirectoryTree *p_directoryTree = p_threadArg->p_directoryTree;
-    char *command = p_threadArg->command;
-
-    DirectoryNode *tmpNode = p_directoryTree->current;
-    char tmp[MAX_DIRECTORY_SIZE];
-    int val;
-
-    strncpy(tmp, command, MAX_DIRECTORY_SIZE);
-    if (strstr(command, "/") == NULL) {
-        make_directory(p_directoryTree, command, 'd');
-    } else {
-        char *p_get_directory = get_directory(command);
-        val = move_directory_path(p_directoryTree, p_get_directory);
-        if (val != 0) {
-            printf("mkdir: '%s': 그런 파일이나 디렉터리가 없습니다\n", p_get_directory);
-        } else {
-            char *str = strtok(tmp, "/");
-            char *p_directory_name;
-            while (str != NULL) {
-                p_directory_name = str;
-                str = strtok(NULL, "/");
-            }
-            make_directory(p_directoryTree, p_directory_name, 'd');
-            p_directoryTree->current = tmpNode;
-        }
-    }
-
-    pthread_exit(NULL);
-}
-
-// command
 int mkdir(DirectoryTree *p_directoryTree, char *command) {
     DirectoryNode *tmpNode = NULL;
     char *str;
-    int val;
+    int isDirectoryExist;
+    int tmpMode;
+
+    if (command == NULL) {
+        printf("mkdir: 잘못된 연산자\n");
+        printf("Try 'mkdir --help' for more information.\n");
+        return -1;
+    }
+
+    int t_count = 0;
+    pthread_t t_command[MAX_THREAD_SIZE];
+    ThreadArg p_threadArg[MAX_THREAD_SIZE];
+    tmpNode = p_directoryTree->current;
+    if (command[0] == '-') {
+        if (strcmp(command, "-p") == 0) {
+            str = strtok(NULL, " ");
+            if (str == NULL) {
+                printf("mkdir: 잘못된 연산자\n");
+                printf("Try 'mkdir --help' for more information.\n");
+                return -1;
+            }
+
+            while (str != NULL) {
+                printf("%s : str\n", str);
+                p_threadArg[t_count].p_directoryTree = p_directoryTree;
+                p_threadArg[t_count].additionalValue = ".";
+                p_threadArg[t_count++].command = str;
+                str = strtok(NULL, " ");
+            }
+        } else if (strcmp(command, "-m") == 0) {
+            str = strtok(NULL, " ");
+            if (str == NULL) {
+                printf("mkdir: 잘못된 연산자\n");
+                printf("Try 'mkdir --help' for more information.\n");
+                return -1;
+            }
+            if (str[0] - '0' < 8 && str[1] - '0' < 8 && str[2] - '0' < 8 && strlen(str) == 3) {
+                tmpMode = atoi(str);
+                char *modeStr = str;
+                str = strtok(NULL, " ");
+                if (str == NULL) {
+                    printf("mkdir: 잘못된 연산자\n");
+                    printf("Try 'mkdir --help' for more information.\n");
+                    return -1;
+                }
+
+                while (str != NULL) {
+                    p_threadArg[t_count].p_directoryTree = p_directoryTree;
+                    p_threadArg[t_count].additionalValue = modeStr;
+                    p_threadArg[t_count++].command = str;
+                    str = strtok(NULL, " ");
+                }
+            } else {
+                printf("mkdir: 잘못된 모드: '%s'\n", str);
+                printf("Try 'mkdir --help' for more information.\n");
+                return -1;
+            }
+        } else if (strcmp(command, "--help") == 0) {
+            printf("사용법: mkdir [옵션]... 디렉터리...\n");
+            printf("  Create the DIRECTORY(ies), if they do not already exists.\n\n");
+            printf("  Options:\n");
+            printf("    -m, --mode=MODE\t set file mode (as in chmod)\n");
+            printf("    -p, --parents  \t no error if existing, make parent directories as needed\n");
+            printf("        --help\t 이 도움말을 표시하고 끝냅니다\n");
+            return -1;
+        } else {
+            str = strtok(command, "-");
+            if (str == NULL) {
+                printf("mkdir: 잘못된 연산자\n");
+                printf("Try 'mkdir --help' for more information.\n");
+                return -1;
+            } else {
+                printf("mkdir: 부적절한 옵션 -- '%s'\n", str);
+                printf("Try 'mkdir --help' for more information.\n");
+                return -1;
+            }
+        }
+    } else {
+        str = strtok(NULL, " ");
+
+        p_threadArg[t_count].p_directoryTree = p_directoryTree;
+        p_threadArg[t_count].additionalValue = NULL;
+        p_threadArg[t_count++].command = command;
+
+        while (str != NULL) {
+            p_threadArg[t_count].p_directoryTree = p_directoryTree;
+            p_threadArg[t_count].additionalValue = NULL;
+            p_threadArg[t_count++].command = str;
+            str = strtok(NULL, " ");
+        }
+    }
+
+    for (int i = 0; i < t_count; i++) {
+        pthread_create(&t_command[i], NULL, thread_routine_make_directory, (void *)&p_threadArg[i]);
+        pthread_join(t_command[i], NULL);
+    }
+    return 0;
+}
+
+int touch(DirectoryTree *p_directoryTree, char *command) {
+    DirectoryNode *tmpNode = NULL;
+    char *str;
+    int isDirectoryExist;
+    int tmpMode;
+
+    if (command == NULL) {
+        printf("touch: 잘못된 연산자\n");
+        printf("Try 'touch --help' for more information.\n");
+        return -1;
+    }
+
+    int t_count = 0;
+    pthread_t t_command[MAX_THREAD_SIZE];
+    ThreadArg p_threadArg[MAX_THREAD_SIZE];
+    tmpNode = p_directoryTree->current;
+    if (command[0] == '-') {
+        if (strcmp(command, "-p") == 0) {
+            str = strtok(NULL, " ");
+            if (str == NULL) {
+                printf("mkdir: 잘못된 연산자\n");
+                printf("Try 'mkdir --help' for more information.\n");
+                return -1;
+            }
+            if (strncmp(str, "/", 1) == 0) {
+                p_directoryTree->current = p_directoryTree->root;
+            }
+            str = strtok(str, "/");
+            while (str != NULL) {
+                isDirectoryExist = move_current_tree(p_directoryTree, str);
+                if (isDirectoryExist != 0) {
+                    make_new(p_directoryTree, str, 'd', "755");
+                    move_current_tree(p_directoryTree, str);
+                }
+                str = strtok(NULL, "/");
+            }
+            p_directoryTree->current = tmpNode;
+        } else if (strcmp(command, "-m") == 0) {
+            str = strtok(NULL, " ");
+            if (str == NULL) {
+                printf("mkdir: 잘못된 연산자\n");
+                printf("Try 'mkdir --help' for more information.\n");
+                return -1;
+            }
+            if (str[0] - '0' < 8 && str[1] - '0' < 8 && str[2] - '0' < 8 && strlen(str) == 3) {
+                tmpMode = atoi(str);
+                str = strtok(NULL, " ");
+                if (str == NULL) {
+                    printf("mkdir: 잘못된 연산자\n");
+                    printf("Try 'mkdir --help' for more information.\n");
+                    return -1;
+                }
+                isDirectoryExist = make_new(p_directoryTree, str, 'd', NULL);
+                if (isDirectoryExist == 0) {
+                    tmpNode = is_exist_directory(p_directoryTree, str, 'd');
+                    tmpNode->mode = tmpMode;
+                    mode_to_permission(tmpNode);
+                }
+            } else {
+                printf("mkdir: 잘못된 모드: '%s'\n", str);
+                printf("Try 'mkdir --help' for more information.\n");
+                return -1;
+            }
+        } else if (strcmp(command, "--help") == 0) {
+            printf("사용법: mkdir [옵션]... 디렉터리...\n");
+            printf("  Create the DIRECTORY(ies), if they do not already exists.\n\n");
+            printf("  Options:\n");
+            printf("    -m, --mode=MODE\t set file mode (as in chmod)\n");
+            printf("    -p, --parents  \t no error if existing, make parent directories as needed\n");
+            printf("        --help\t 이 도움말을 표시하고 끝냅니다\n");
+            return -1;
+        } else {
+            str = strtok(command, "-");
+            if (str == NULL) {
+                printf("mkdir: 잘못된 연산자\n");
+                printf("Try 'mkdir --help' for more information.\n");
+                return -1;
+            } else {
+                printf("mkdir: 부적절한 옵션 -- '%s'\n", str);
+                printf("Try 'mkdir --help' for more information.\n");
+                return -1;
+            }
+        }
+    } else {
+        str = strtok(NULL, " ");
+        p_threadArg[t_count].p_directoryTree = p_directoryTree;
+        p_threadArg[t_count++].command = command;
+
+        while (str != NULL) {
+            p_threadArg[t_count].p_directoryTree = p_directoryTree;
+            p_threadArg[t_count++].command = str;
+            str = strtok(NULL, " ");
+        }
+
+        for (int i = 0; i < t_count; i++) {
+            pthread_create(&t_command[i], NULL, thread_routine_touch, (void *)&p_threadArg[i]);
+            pthread_join(t_command[i], NULL);
+        }
+    }
+    return 0;
+}
+
+int cp(DirectoryTree *p_directoryTree, char *command) {
+    DirectoryNode *tmpNode = NULL;
+    char *str;
+    int isDirectoryExist;
     int tmpMode;
 
     if (command == NULL) {
@@ -64,9 +235,9 @@ int mkdir(DirectoryTree *p_directoryTree, char *command) {
             }
             str = strtok(str, "/");
             while (str != NULL) {
-                val = move_current_tree(p_directoryTree, str);
-                if (val != 0) {
-                    make_directory(p_directoryTree, str, 'd');
+                isDirectoryExist = move_current_tree(p_directoryTree, str);
+                if (isDirectoryExist != 0) {
+                    make_new(p_directoryTree, str, 'd', NULL);
                     move_current_tree(p_directoryTree, str);
                 }
                 str = strtok(NULL, "/");
@@ -87,8 +258,8 @@ int mkdir(DirectoryTree *p_directoryTree, char *command) {
                     printf("Try 'mkdir --help' for more information.\n");
                     return -1;
                 }
-                val = make_directory(p_directoryTree, str, 'd');
-                if (val == 0) {
+                isDirectoryExist = make_new(p_directoryTree, str, 'd', NULL);
+                if (isDirectoryExist == 0) {
                     tmpNode = is_exist_directory(p_directoryTree, str, 'd');
                     tmpNode->mode = tmpMode;
                     mode_to_permission(tmpNode);
@@ -148,7 +319,7 @@ int rm(DirectoryTree *p_directoryTree, char *command) {
     char tmp[MAX_DIRECTORY_SIZE];
     char tmp2[MAX_DIRECTORY_SIZE];
     char tmp3[MAX_DIRECTORY_SIZE];
-    int val;
+    int isDirectoryExist;
 
     if (command == NULL) {
         printf("rm: 잘못된 연산자\n");
@@ -180,8 +351,8 @@ int rm(DirectoryTree *p_directoryTree, char *command) {
                 }
             } else {
                 strncpy(tmp2, get_directory(str), MAX_DIRECTORY_SIZE);
-                val = move_directory_path(p_directoryTree, tmp2);
-                if (val != 0) {
+                isDirectoryExist = move_directory_path(p_directoryTree, tmp2);
+                if (isDirectoryExist != 0) {
                     printf("rm: '%s': 그런 파일이나 디렉터리가 없습니다\n", tmp2);
                     return -1;
                 }
@@ -228,8 +399,8 @@ int rm(DirectoryTree *p_directoryTree, char *command) {
                 }
             } else {
                 strncpy(tmp2, get_directory(str), MAX_DIRECTORY_SIZE);
-                val = move_directory_path(p_directoryTree, tmp2);
-                if (val != 0) {
+                isDirectoryExist = move_directory_path(p_directoryTree, tmp2);
+                if (isDirectoryExist != 0) {
                     return -1;
                 }
                 str = strtok(tmp, "/");
@@ -274,8 +445,8 @@ int rm(DirectoryTree *p_directoryTree, char *command) {
                 }
             } else {
                 strncpy(tmp2, get_directory(str), MAX_DIRECTORY_SIZE);
-                val = move_directory_path(p_directoryTree, tmp2);
-                if (val != 0) {
+                isDirectoryExist = move_directory_path(p_directoryTree, tmp2);
+                if (isDirectoryExist != 0) {
                     return -1;
                 }
                 str = strtok(tmp, "/");
@@ -338,8 +509,8 @@ int rm(DirectoryTree *p_directoryTree, char *command) {
             }
         } else {
             strncpy(tmp2, get_directory(command), MAX_DIRECTORY_SIZE);
-            val = move_directory_path(p_directoryTree, tmp2);
-            if (val != 0) {
+            isDirectoryExist = move_directory_path(p_directoryTree, tmp2);
+            if (isDirectoryExist != 0) {
                 printf("rm: '%s': 그런 파일이나 디렉터리가 없습니다\n", tmp2);
                 return -1;
             }
@@ -379,7 +550,7 @@ int cd(DirectoryTree *p_directoryTree, char *command) {
     DirectoryNode *tmpNode = NULL;
     char *str = NULL;
     char tmp[MAX_DIRECTORY_SIZE];
-    int val;
+    int isDirectoryExist;
 
     if (command == NULL) {
         strcpy(tmp, gp_userList->current->dir);
@@ -417,8 +588,8 @@ int cd(DirectoryTree *p_directoryTree, char *command) {
             printf("-bash: cd: '%s': 디렉터리가 아닙니다\n", command);
             return -1;
         }
-        val = move_directory_path(p_directoryTree, command);
-        if (val != 0)
+        isDirectoryExist = move_directory_path(p_directoryTree, command);
+        if (isDirectoryExist != 0)
             printf("-bash: cd: '%s': 그런 파일이나 디렉터리가 없습니다\n", command);
     }
     return 0;
@@ -455,7 +626,7 @@ int pwd(DirectoryTree *p_directoryTree, Stack *p_directoryStack, char *command) 
 int ls(DirectoryTree *p_directoryTree, char *command) {
     DirectoryNode *tmpNode = NULL;
     char *str;
-    int val;
+    int isDirectoryExist;
 
     if (command == NULL) {
         list_directory(p_directoryTree, 0, 0);
@@ -467,8 +638,8 @@ int ls(DirectoryTree *p_directoryTree, char *command) {
             str = strtok(NULL, " ");
             if (str != NULL) {
                 tmpNode = p_directoryTree->current;
-                val = move_directory_path(p_directoryTree, str);
-                if (val != 0)
+                isDirectoryExist = move_directory_path(p_directoryTree, str);
+                if (isDirectoryExist != 0)
                     return -1;
             }
             list_directory(p_directoryTree, 1, 1);
@@ -476,8 +647,8 @@ int ls(DirectoryTree *p_directoryTree, char *command) {
             str = strtok(NULL, " ");
             if (str != NULL) {
                 tmpNode = p_directoryTree->current;
-                val = move_directory_path(p_directoryTree, str);
-                if (val != 0)
+                isDirectoryExist = move_directory_path(p_directoryTree, str);
+                if (isDirectoryExist != 0)
                     return -1;
             }
             list_directory(p_directoryTree, 0, 1);
@@ -485,8 +656,8 @@ int ls(DirectoryTree *p_directoryTree, char *command) {
             str = strtok(NULL, " ");
             if (str != NULL) {
                 tmpNode = p_directoryTree->current;
-                val = move_directory_path(p_directoryTree, str);
-                if (val != 0)
+                isDirectoryExist = move_directory_path(p_directoryTree, str);
+                if (isDirectoryExist != 0)
                     return -1;
             }
             list_directory(p_directoryTree, 1, 0);
@@ -512,8 +683,8 @@ int ls(DirectoryTree *p_directoryTree, char *command) {
         }
     } else {
         tmpNode = p_directoryTree->current;
-        val = move_directory_path(p_directoryTree, command);
-        if (val != 0)
+        isDirectoryExist = move_directory_path(p_directoryTree, command);
+        if (isDirectoryExist != 0)
             return -1;
         list_directory(p_directoryTree, 0, 0);
         p_directoryTree->current = tmpNode;
@@ -533,7 +704,7 @@ int cat(DirectoryTree *p_directoryTree, char *command) {
     char tmp[MAX_DIRECTORY_SIZE];
     char tmp2[MAX_DIRECTORY_SIZE];
     char tmp3[MAX_DIRECTORY_SIZE];
-    int val;
+    int isDirectoryExist;
 
     /**
         cat0: write, EOF to save
@@ -569,8 +740,8 @@ int cat(DirectoryTree *p_directoryTree, char *command) {
             }
         } else {
             strncpy(tmp2, get_directory(str), MAX_DIRECTORY_SIZE);
-            val = move_directory_path(p_directoryTree, tmp2);
-            if (val != 0) {
+            isDirectoryExist = move_directory_path(p_directoryTree, tmp2);
+            if (isDirectoryExist != 0) {
                 printf("cat: '%s': 그런 파일이나 디렉터리가 없습니다\n", tmp2);
                 return -1;
             }
@@ -621,8 +792,8 @@ int cat(DirectoryTree *p_directoryTree, char *command) {
                 }
             } else {
                 strncpy(tmp2, get_directory(str), MAX_DIRECTORY_SIZE);
-                val = move_directory_path(p_directoryTree, tmp2);
-                if (val != 0) {
+                isDirectoryExist = move_directory_path(p_directoryTree, tmp2);
+                if (isDirectoryExist != 0) {
                     printf("cat: '%s': 그런 파일이나 디렉터리가 없습니다\n", tmp2);
                     return -1;
                 }
@@ -675,8 +846,8 @@ int cat(DirectoryTree *p_directoryTree, char *command) {
                 }
             } else {
                 strncpy(tmp2, get_directory(str), MAX_DIRECTORY_SIZE);
-                val = move_directory_path(p_directoryTree, tmp2);
-                if (val != 0) {
+                isDirectoryExist = move_directory_path(p_directoryTree, tmp2);
+                if (isDirectoryExist != 0) {
                     printf("cat: '%s': 그런 파일이나 디렉터리가 없습니다\n", tmp2);
                     return -1;
                 }
@@ -752,8 +923,8 @@ int cat(DirectoryTree *p_directoryTree, char *command) {
             }
         } else {
             strncpy(tmp2, get_directory(command), MAX_DIRECTORY_SIZE);
-            val = move_directory_path(p_directoryTree, tmp2);
-            if (val != 0) {
+            isDirectoryExist = move_directory_path(p_directoryTree, tmp2);
+            if (isDirectoryExist != 0) {
                 printf("cat: '%s': 그런 파일이나 디렉터리가 없습니다\n", tmp2);
                 return -1;
             }
@@ -867,84 +1038,6 @@ int chmod(DirectoryTree *p_directoryTree, char *command) {
     return 0;
 }
 
-int chown_(DirectoryTree *p_directoryTree, char *command) {
-    DirectoryNode *tmpNode = NULL;
-    UserNode *tmpUser = NULL;
-    char *str;
-    char tmp[MAX_NAME_SIZE];
-
-    if (command == NULL) {
-        printf("chown: 잘못된 연산자\n");
-        printf("Try 'chown --help' for more information.\n");
-        return -1;
-    }
-    if (command[0] == '-') {
-        if (strcmp(command, "-R") == 0) {
-            str = strtok(NULL, " ");
-            if (str == NULL) {
-                printf("chown: 잘못된 연산자\n");
-                printf("Try 'chown --help' for more information.\n");
-                return -1;
-            }
-            tmpUser = is_exist_user(gp_userList, str);
-            if (tmpUser != NULL) {
-                strncpy(tmp, str, MAX_NAME_SIZE);
-            } else {
-                printf("chown: 잘못된 사용자: '%s'\n", str);
-                printf("Try 'chown --help' for more information.\n");
-                return -1;
-            }
-            str = strtok(NULL, " ");
-            if (str == NULL) {
-                printf("chown: 잘못된 연산자\n");
-                printf("Try 'chown --help' for more information.\n");
-                return -1;
-            }
-            tmpNode = is_exist_directory(p_directoryTree, str, 'd');
-            if (tmpNode != NULL) {
-                if (tmpNode->LeftChild == NULL)
-                    change_owner(p_directoryTree, tmp, str);
-                else {
-                    change_owner(p_directoryTree, tmp, str);
-                    change_all_owner(tmpNode->LeftChild, tmp);
-                }
-            } else {
-                printf("chown: '%s': 그런 파일이나 디렉터리가 없습니다\n", str);
-                return -1;
-            }
-        } else if (strcmp(command, "--help") == 0) {
-            printf("사용법: chown [옵션]... [소유자]... 파일...\n");
-            printf("  Change the owner and/or group of each FILE to OWNER and/or GROUP.\n\n");
-            printf("  Options:\n");
-            printf("    -R, --recursive\t change files and directories recursively\n");
-            printf("        --help\t 이 도움말을 표시하고 끝냅니다\n");
-            return -1;
-        } else {
-            str = strtok(command, "-");
-            if (str == NULL) {
-                printf("chown: 잘못된 연산자\n");
-                printf("Try 'chown --help' for more information.\n");
-                return -1;
-            } else {
-                printf("chown: 부적절한 옵션 -- '%s'\n", str);
-                printf("Try 'chown --help' for more information.\n");
-                return -1;
-            }
-        }
-    } else {
-        strncpy(tmp, command, MAX_NAME_SIZE);
-        str = strtok(NULL, " ");
-        if (str == NULL) {
-            printf("chown: 잘못된 연산자\n");
-            printf("Try 'chown --help' for more information.\n");
-            return -1;
-        } else {
-            change_owner(p_directoryTree, tmp, str);
-        }
-    }
-    return 0;
-}
-
 int find_(DirectoryTree *p_directoryTree, char *command) {
     char *str;
     if (command == NULL) {
@@ -983,138 +1076,4 @@ int find_(DirectoryTree *p_directoryTree, char *command) {
     }
 
     return 0;
-}
-
-void instruction(DirectoryTree *p_directoryTree, char *command) {
-    char *str;
-    int val;
-    if (strcmp(command, "") == 0 || command[0] == ' ') {
-        return;
-    }
-    str = strtok(command, " ");
-
-    if (strcmp(str, "clear") == 0 || strcmp(str, "cls") == 0) {
-        system("clear");
-    } else if (strcmp(str, "mkdir") == 0) {
-        str = strtok(NULL, " ");
-        val = mkdir(p_directoryTree, str);
-        if (val == 0) {
-            save_directory(p_directoryTree, gp_directoryStack);
-        }
-    } else if (strcmp(str, "rm") == 0) {
-        str = strtok(NULL, " ");
-        val = rm(p_directoryTree, str);
-        if (val == 0) {
-            save_directory(p_directoryTree, gp_directoryStack);
-        }
-    } else if (strcmp(str, "cd") == 0) {
-        str = strtok(NULL, " ");
-        cd(p_directoryTree, str);
-    } else if (strcmp(str, "pwd") == 0) {
-        str = strtok(NULL, " ");
-        pwd(p_directoryTree, gp_directoryStack, str);
-    } else if (strcmp(str, "ls") == 0) {
-        str = strtok(NULL, " ");
-        ls(p_directoryTree, str);
-    } else if (strcmp(str, "cat") == 0) {
-        str = strtok(NULL, " ");
-        val = cat(p_directoryTree, str);
-        if (val == 0) {
-            save_directory(p_directoryTree, gp_directoryStack);
-        }
-    } else if (strcmp(str, "chmod") == 0) {
-        str = strtok(NULL, " ");
-        val = chmod(p_directoryTree, str);
-        if (val == 0) {
-            save_directory(p_directoryTree, gp_directoryStack);
-        }
-    } else if (strcmp(str, "find") == 0) {
-        str = strtok(NULL, " ");
-        find_(p_directoryTree, str);
-    } else if (strcmp(command, "exit") == 0) {
-        printf("로그아웃\n");
-        exit(0);
-    } else {
-        printf("'%s': 명령을 찾을 수 없습니다\n", command);
-    }
-    return;
-}
-
-void print_start() {
-    // printf("Welcome to Ubuntu 18.04.2 LTS (GNU/Linux 4.18.0-17-generic x86_64)\n\n");
-    // printf(" * Documentation: https://help.ubuntu.com\n");
-    // printf(" * Management:    https://landscape.canonial.com\n");
-    // printf(" * Support:       https://ubuntu.com/advantage\n\n\n");
-    // printf(" * Canonial Livepatch is available for installation.\n");
-    // printf("   - Reduce system reboots and improve kernel security. Activate at:\n");
-    // printf("     https://ubuntu.com/livepatch\n\n");
-    // printf("Your Hardware Enablement Stack(HWE) is supported until April 2023.\n");
-    printf("Welcome to miniOS 1.0.0\n\n");
-
-    printf("Last login: ");
-    get_weekday(gp_userList->current->wday);
-    get_month(gp_userList->current->month);
-    printf("%d %02d:%02d:%02d %d\n", gp_userList->current->day, gp_userList->current->hour, gp_userList->current->minute, gp_userList->current->sec, gp_userList->current->year);
-}
-
-void print_head(DirectoryTree *p_directoryTree, Stack *p_directoryStack) {
-    // variables
-    DirectoryNode *tmpNode = NULL;
-    char tmp[MAX_DIRECTORY_SIZE] = "";
-    char tmp2[MAX_DIRECTORY_SIZE] = "";
-    char usr;
-
-    if (gp_userList->current == gp_userList->head)
-        usr = '#';
-    else
-        usr = '$';
-
-    BOLD;
-    GREEN;
-    printf("%s@miniOS", gp_userList->current->name);
-    DEFAULT;
-    printf(":");
-    tmpNode = p_directoryTree->current;
-
-    if (tmpNode == p_directoryTree->root) {
-        strcpy(tmp, "/");
-    } else {
-        while (tmpNode->Parent != NULL) {
-            push(p_directoryStack, tmpNode->name);
-            tmpNode = tmpNode->Parent;
-        }
-        while (is_empty(p_directoryStack) == 0) {
-            strcat(tmp, "/");
-            strcat(tmp, pop(p_directoryStack));
-        }
-    }
-
-    strncpy(tmp2, tmp, strlen(gp_userList->current->dir));
-
-    if (gp_userList->current == gp_userList->head) {
-        BOLD;
-        BLUE;
-        printf("%s", tmp);
-    } else if (strcmp(gp_userList->current->dir, tmp2) != 0) {
-        BOLD;
-        BLUE;
-        printf("%s", tmp);
-    } else {
-        tmpNode = p_directoryTree->current;
-        while (tmpNode->Parent != NULL) {
-            push(p_directoryStack, tmpNode->name);
-            tmpNode = tmpNode->Parent;
-        }
-        pop(p_directoryStack);
-        pop(p_directoryStack);
-        BOLD;
-        BLUE;
-        printf("~");
-        while (is_empty(p_directoryStack) == 0) {
-            printf("/");
-            printf("%s", pop(p_directoryStack));
-        }
-    }
-    DEFAULT;
-    printf("%c ", usr);
 }

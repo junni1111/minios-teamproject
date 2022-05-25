@@ -79,14 +79,17 @@ typedef struct tagStack {
 typedef struct tagThread {
     DirectoryTree *p_directoryTree;
     char *command;
+    char *additionalValue;
 } ThreadArg;
 
 // time
 time_t ltime;
 struct tm *today;
 
-// instruction.c
+// command.c
 int mkdir(DirectoryTree *p_directoryTree, char *command);
+int touch(DirectoryTree *p_directoryTree, char *command);
+int cp(DirectoryTree *p_directoryTree, char *command);
 int rm(DirectoryTree *p_directoryTree, char *command);
 int cd(DirectoryTree *p_directoryTree, char *command);
 int pwd(DirectoryTree *p_directoryTree, Stack *p_directoryStack, char *command);
@@ -95,7 +98,9 @@ int cat(DirectoryTree *p_directoryTree, char *command);
 int chmod(DirectoryTree *p_directoryTree, char *command);
 int chown_(DirectoryTree *p_directoryTree, char *command);
 int find_(DirectoryTree *p_directoryTree, char *command);
-void instruction(DirectoryTree *p_directoryTree, char *command);
+
+// init.c
+void init(DirectoryTree *p_directoryTree, char *command);
 void print_start();
 void print_head(DirectoryTree *p_directoryTree, Stack *p_directoryStack);
 
@@ -117,7 +122,7 @@ DirectoryTree *load_directory();
 
 // mkdir
 DirectoryTree *initialize_directory_tree();
-int make_directory(DirectoryTree *p_directoryTree, char *directoryName, char type);
+int make_new(DirectoryTree *p_directoryTree, char *directoryName, char type, char *additionalValue);
 // rm
 int remove_directory(DirectoryTree *p_directoryTree, char *directoryName);
 // cd
@@ -160,6 +165,11 @@ char *pop(Stack *p_directoryStack);
 // time.c
 void get_month(int i);
 void get_weekday(int i);
+
+// thread.c
+void *thread_routine_make_directory(void *arg);
+void *thread_routine_touch(void *arg);
+void *thread_routine_copy(void *arg);
 
 // global pointer variable
 DirectoryTree *gp_directoryTree;

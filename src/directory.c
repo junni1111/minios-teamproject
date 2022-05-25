@@ -246,8 +246,8 @@ DirectoryTree *initialize_directory_tree() {
 
     return p_directoryTree;
 }
-// type==0: folder, type==1: file
-int make_directory(DirectoryTree *p_directoryTree, char *directoryName, char type) {
+// type=='d': folder, type=='f': file
+int make_new(DirectoryTree *p_directoryTree, char *directoryName, char type, char *additionalValue) {
     // variables
     DirectoryNode *NewNode = (DirectoryNode *)malloc(sizeof(DirectoryNode));
     DirectoryNode *tmpNode = NULL;
@@ -263,7 +263,7 @@ int make_directory(DirectoryTree *p_directoryTree, char *directoryName, char typ
         return -1;
     }
     tmpNode = is_exist_directory(p_directoryTree, directoryName, type);
-    if (tmpNode != NULL && tmpNode->type == 'd') {
+    if (tmpNode != NULL) {
         printf("mkdir: '%s' 디렉터리를 만들 수 없습니다: 파일이 존재합니다\n", directoryName);
         free(NewNode);
         return -1;
@@ -278,22 +278,35 @@ int make_directory(DirectoryTree *p_directoryTree, char *directoryName, char typ
 
     // set NewNode
     strncpy(NewNode->name, directoryName, MAX_NAME_SIZE);
-    if (directoryName[0] == '.') {
-        NewNode->type = 'd';
-        // rwx------
-        NewNode->mode = 700;
-        NewNode->SIZE = 4096;
-    } else if (type == 'd') {
+    if (type == 'f') {
+        NewNode->type = 'f';
+        // rw-r--r--
+        NewNode->mode = 644;
+        NewNode->SIZE = 0;
+    } else if (directoryName[0] == '.') {
         NewNode->type = 'd';
         // rwxr-xr-x
         NewNode->mode = 755;
         NewNode->SIZE = 4096;
     } else {
-        NewNode->type = 'f';
-        // rw-r--r--
-        NewNode->mode = 644;
-        NewNode->SIZE = 0;
+        NewNode->type = 'd';
+        // rwx------
+        NewNode->mode = 700;
+        NewNode->SIZE = 4096;
     }
+
+    if (additionalValue) {
+        if (type == 'd') {
+            if (strlen(additionalValue) == 3) {
+                NewNode->mode = atoi(additionalValue);
+            }
+        } else {
+            if (additionalValue[0] == '1') {
+                NewNode->mode = 755;
+            }
+        }
+    }
+
     mode_to_permission(NewNode);
     NewNode->UID = gp_userList->current->UID;
     NewNode->GID = gp_userList->current->GID;
@@ -302,6 +315,9 @@ int make_directory(DirectoryTree *p_directoryTree, char *directoryName, char typ
     NewNode->hour = today->tm_hour;
     NewNode->minute = today->tm_min;
     NewNode->Parent = p_directoryTree->current;
+
+    if (type == 'f' && strlen(additionalValue) > 1) {
+    }
 
     if (p_directoryTree->current->LeftChild == NULL) {
         p_directoryTree->current->LeftChild = NewNode;
@@ -384,7 +400,7 @@ int move_directory_path(DirectoryTree *p_directoryTree, char *directoryPath) {
     DirectoryNode *tmpNode = NULL;
     char tmpPath[MAX_DIRECTORY_SIZE];
     char *str = NULL;
-    int val = 0;
+    int isDirectoryExist = 0;
 
     // set tmp
     strncpy(tmpPath, directoryPath, MAX_DIRECTORY_SIZE);
@@ -403,9 +419,9 @@ int move_directory_path(DirectoryTree *p_directoryTree, char *directoryPath) {
         // if input is relative path
         str = strtok(tmpPath, "/");
         while (str != NULL) {
-            val = move_current_tree(p_directoryTree, str);
+            isDirectoryExist = move_current_tree(p_directoryTree, str);
             // if input path doesn't exist
-            if (val != 0) {
+            if (isDirectoryExist != 0) {
                 p_directoryTree->current = tmpNode;
                 return -1;
             }
@@ -685,7 +701,7 @@ int concatenate(DirectoryTree *p_directoryTree, char *fName, int o) {
         }
         // if file doesn't exist
         else {
-            make_directory(p_directoryTree, fName, 'f');
+            make_new(p_directoryTree, fName, 'f', NULL);
         }
         // write size
         tmpNode = is_exist_directory(p_directoryTree, fName, 'f');
