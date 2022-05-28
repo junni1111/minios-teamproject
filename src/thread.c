@@ -88,7 +88,7 @@ void *thread_routine_touch(void *arg) {
             // get time
             time(&ltime);
             today = localtime(&ltime);
-            mode_to_permission(fileNode);
+            // mode_to_permission(fileNode);
             fileNode->month = today->tm_mon + 1;
             fileNode->day = today->tm_mday;
             fileNode->hour = today->tm_hour;
@@ -108,7 +108,7 @@ void *thread_routine_touch(void *arg) {
             hour = (time[4] - '0') * 10 + (time[5] - '0');
             minute = (time[6] - '0') * 10 + (time[7] - '0');
 
-            mode_to_permission(fileNode);
+            // mode_to_permission(fileNode);
             fileNode->month = month;
             fileNode->day = day;
             fileNode->hour = hour;
@@ -140,30 +140,75 @@ void *thread_routine_copy(void *arg) {
     ThreadArg *p_threadArg = ((ThreadArg *)arg);
     DirectoryTree *p_directoryTree = p_threadArg->p_directoryTree;
     char *command = p_threadArg->command;
+    char *fileName = p_threadArg->additionalValue;  // fileName
+    char *copyPath = p_threadArg->copyPath;         // copyPath
 
-    DirectoryNode *tmpNode = p_directoryTree->current;
+    DirectoryNode *tmpNode = NULL;
+    DirectoryNode *preNode = p_directoryTree->current;
+    DirectoryNode *fileNameNode = p_threadArg->fileNameNode;
     char tmp[MAX_DIRECTORY_SIZE];
     int isDirectoryExist;
 
-    strncpy(tmp, command, MAX_DIRECTORY_SIZE);
-    if (strstr(command, "/") == NULL) {
-        make_new(p_directoryTree, command, 'd', p_threadArg->additionalValue);
+    printf("eR1\n");
+    if (copyPath) {  // copyPath가 존재할때
+        move_directory_path(p_directoryTree, copyPath);
+    }
+
+    printf("eR2\n");
+    if (strcmp(command, fileName) == 0) {  // 복사할 파일이랑 대상이랑 이름이 같으면 종료 (복사 불가)
+        printf("cp: '%s': 이미 존재하는 파일 이름 입니다.\n", fileName);
     } else {
-        char *p_get_directory = get_directory(command);
-        isDirectoryExist = move_directory_path(p_directoryTree, p_get_directory);
-        if (isDirectoryExist != 0) {
-            printf("mkdir: '%s': 그런 파일이나 디렉터리가 없습니다\n", p_get_directory);
-        } else {
-            char *str = strtok(tmp, "/");
-            char *p_directory_name;
-            while (str != NULL) {
-                p_directory_name = str;
-                str = strtok(NULL, "/");
+        printf("eR3\n");
+        DirectoryNode *checkOverlap = p_directoryTree->current->LeftChild;
+        while (checkOverlap != NULL) {
+            if (strcmp(checkOverlap->name, command) == 0 && checkOverlap->type == 'f') {
+                break;
             }
-            make_new(p_directoryTree, p_directory_name, 'd', p_threadArg->additionalValue);
-            p_directoryTree->current = tmpNode;
+            checkOverlap = checkOverlap->RightSibling;
+        }
+        if (checkOverlap != NULL) {  // 이름이 같은 파일이 존재하면 node트리에서 삭제함
+            rm(p_directoryTree, command);
+        }
+
+        printf("eR4\n");
+        DirectoryNode *NewNode = (DirectoryNode *)malloc(sizeof(DirectoryNode));
+        // initialize NewNode
+        NewNode->LeftChild = NULL;
+        NewNode->RightSibling = NULL;
+
+        // get time
+        time(&ltime);
+        today = localtime(&ltime);
+
+        // set NewNode
+        strncpy(NewNode->name, command, MAX_NAME_SIZE);
+
+        for (int i = 0; i < 9; i++) {
+            NewNode->permission[i] = fileNameNode->permission[i];
+        }
+        NewNode->mode = fileNameNode->mode;
+        NewNode->SIZE = fileNameNode->SIZE;
+        NewNode->UID = fileNameNode->UID;
+        NewNode->GID = fileNameNode->GID;
+        NewNode->month = today->tm_mon + 1;
+        NewNode->day = today->tm_mday;
+        NewNode->hour = today->tm_hour;
+        NewNode->minute = today->tm_min;
+        NewNode->Parent = p_directoryTree->current;
+        NewNode->type = 'f';
+
+        if (p_directoryTree->current->LeftChild == NULL) {
+            p_directoryTree->current->LeftChild = NewNode;
+        } else {
+            tmpNode = p_directoryTree->current->LeftChild;
+
+            while (tmpNode->RightSibling != NULL) {
+                tmpNode = tmpNode->RightSibling;
+            }
+            tmpNode->RightSibling = NewNode;
         }
     }
 
+    p_directoryTree->current = preNode;
     pthread_exit(NULL);
 }

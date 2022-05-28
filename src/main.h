@@ -80,6 +80,8 @@ typedef struct tagThread {
     DirectoryTree *p_directoryTree;
     char *command;
     char *additionalValue;
+    char *copyPath;
+    DirectoryNode *fileNameNode;
 } ThreadArg;
 
 // time

@@ -206,18 +206,22 @@ int cp(DirectoryTree *p_directoryTree, char *command) {
     int tmpMode;
 
     if (command == NULL) {
-        printf("mkdir: 잘못된 연산자\n");
-        printf("Try 'mkdir --help' for more information.\n");
+        printf("cp: 잘못된 연산자\n");
+        printf("Try 'cp --help' for more information.\n");
         return -1;
     }
 
+    int t_count = 0;
+    char *fileName, *copyPath = NULL;
+    pthread_t t_command[MAX_THREAD_SIZE];
+    ThreadArg p_threadArg[MAX_THREAD_SIZE];
     tmpNode = p_directoryTree->current;
     if (command[0] == '-') {
-        if (strcmp(command, "-p") == 0) {
+        if (strcmp(command, "-r") == 0) {
             str = strtok(NULL, " ");
             if (str == NULL) {
-                printf("mkdir: 잘못된 연산자\n");
-                printf("Try 'mkdir --help' for more information.\n");
+                printf("cp: 잘못된 연산자\n");
+                printf("Try 'cp --help' for more information.\n");
                 return -1;
             }
             if (strncmp(str, "/", 1) == 0) {
@@ -233,70 +237,69 @@ int cp(DirectoryTree *p_directoryTree, char *command) {
                 str = strtok(NULL, "/");
             }
             p_directoryTree->current = tmpNode;
-        } else if (strcmp(command, "-m") == 0) {
-            str = strtok(NULL, " ");
-            if (str == NULL) {
-                printf("mkdir: 잘못된 연산자\n");
-                printf("Try 'mkdir --help' for more information.\n");
-                return -1;
-            }
-            if (str[0] - '0' < 8 && str[1] - '0' < 8 && str[2] - '0' < 8 && strlen(str) == 3) {
-                tmpMode = atoi(str);
-                str = strtok(NULL, " ");
-                if (str == NULL) {
-                    printf("mkdir: 잘못된 연산자\n");
-                    printf("Try 'mkdir --help' for more information.\n");
-                    return -1;
-                }
-                isDirectoryExist = make_new(p_directoryTree, str, 'd', NULL);
-                if (isDirectoryExist == 0) {
-                    tmpNode = is_exist_directory(p_directoryTree, str, 'd');
-                    tmpNode->mode = tmpMode;
-                    mode_to_permission(tmpNode);
-                }
-            } else {
-                printf("mkdir: 잘못된 모드: '%s'\n", str);
-                printf("Try 'mkdir --help' for more information.\n");
-                return -1;
-            }
         } else if (strcmp(command, "--help") == 0) {
-            printf("사용법: mkdir [옵션]... 디렉터리...\n");
-            printf("  Create the DIRECTORY(ies), if they do not already exists.\n\n");
+            printf("사용법: cp [옵션]... 파일/디렉터리...\n");
+            printf("  Copy file or directory.\n\n");
             printf("  Options:\n");
-            printf("    -m, --mode=MODE\t set file mode (as in chmod)\n");
-            printf("    -p, --parents  \t no error if existing, make parent directories as needed\n");
+            printf("    -r\t copy directory\n");
             printf("        --help\t 이 도움말을 표시하고 끝냅니다\n");
             return -1;
         } else {
             str = strtok(command, "-");
             if (str == NULL) {
-                printf("mkdir: 잘못된 연산자\n");
-                printf("Try 'mkdir --help' for more information.\n");
+                printf("cp: 잘못된 연산자\n");
+                printf("Try 'cp --help' for more information.\n");
                 return -1;
             } else {
-                printf("mkdir: 부적절한 옵션 -- '%s'\n", str);
-                printf("Try 'mkdir --help' for more information.\n");
+                printf("cp: 부적절한 옵션 -- '%s'\n", str);
+                printf("Try 'cp --help' for more information.\n");
                 return -1;
             }
         }
     } else {
+        fileName = command;
         str = strtok(NULL, " ");
-        int t_count = 0;
-        pthread_t t_command[MAX_THREAD_SIZE];
-        ThreadArg p_threadArg[MAX_THREAD_SIZE];
-        p_threadArg[t_count].p_directoryTree = p_directoryTree;
-        p_threadArg[t_count++].command = command;
+
+        DirectoryNode *fileNameNode = p_directoryTree->current->LeftChild;
+        while (fileNameNode != NULL) {
+            if (strcmp(fileNameNode->name, fileName) == 0 && fileNameNode->type == 'f') {
+                break;
+            }
+            fileNameNode = fileNameNode->RightSibling;
+        }
+
+        if (fileNameNode == NULL) {
+            printf("cp: '%s': 그런 파일이 없습니다\n", fileName);
+            return -1;
+        }
 
         while (str != NULL) {
-            p_threadArg[t_count].p_directoryTree = p_directoryTree;
-            p_threadArg[t_count++].command = str;
+            if (strchr(str, '/') != NULL) {
+                copyPath = str;
+            } else {
+                p_threadArg[t_count].p_directoryTree = p_directoryTree;
+                p_threadArg[t_count].fileNameNode = fileNameNode;
+                p_threadArg[t_count].additionalValue = fileName;  // fileName은 복사할 대상
+                p_threadArg[t_count++].command = str;             // str은 복사한 파일 이름
+            }
             str = strtok(NULL, " ");
         }
 
-        for (int i = 0; i < t_count; i++) {
-            pthread_create(&t_command[i], NULL, thread_routine_make_directory, (void *)&p_threadArg[i]);
-            pthread_join(t_command[i], NULL);
+        if (copyPath) {
+            int is_path_exist = move_directory_path(p_directoryTree, copyPath);
+            if (is_path_exist == -1) {  // copyPath 경로에 디렉토리가 존재하지 않으면 종료
+                printf("cp: %s 디렉토리는 존재하지 않습니다.\n", copyPath);
+                printf("Try 'cp --help' for more information.\n");
+                return -1;
+            }
+            p_directoryTree->current = tmpNode;
         }
+    }
+
+    for (int i = 0; i < t_count; i++) {
+        p_threadArg[i].copyPath = copyPath ? copyPath : NULL;
+        pthread_create(&t_command[i], NULL, thread_routine_copy, (void *)&p_threadArg[i]);
+        pthread_join(t_command[i], NULL);
     }
     return 0;
 }
