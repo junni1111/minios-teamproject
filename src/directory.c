@@ -853,3 +853,16 @@ void find_directory(DirectoryTree *p_directoryTree, char *directoryName, int o) 
 
     fclose(gp_file_directory);
 }
+
+void copy_directory(DirectoryTree *p_directoryTree, DirectoryNode *p_directoryNode, char *copyName, char type, int level) {
+    DirectoryNode *currentNode = p_directoryTree->current;
+    make_new(p_directoryTree, copyName, type, NULL);
+    if (p_directoryNode->LeftChild) {
+        move_current_tree(p_directoryTree, copyName);
+        copy_directory(p_directoryTree, p_directoryNode->LeftChild, p_directoryNode->LeftChild->name, p_directoryNode->LeftChild->type, level + 1);
+        p_directoryTree->current = currentNode;
+    }
+    if (p_directoryNode->RightSibling && level != 1) {
+        copy_directory(p_directoryTree, p_directoryNode->RightSibling, p_directoryNode->RightSibling->name, p_directoryNode->RightSibling->type, level);
+    }
+}

@@ -114,6 +114,7 @@ void destory_node(DirectoryNode *p_directoryNode);
 void destory_directory(DirectoryNode *p_directoryNode);
 DirectoryNode *is_exist_directory(DirectoryTree *p_directoryTree, char *directoryName, char type);
 char *get_directory(char *directoryPath);
+void copy_directory(DirectoryTree *p_directoryTree, DirectoryNode *p_directoryNode, char *copyName, char type, int level);
 
 // save & load
 void get_directory_path(DirectoryTree *p_directoryTree, DirectoryNode *p_directoryNode, Stack *p_directoryStack);

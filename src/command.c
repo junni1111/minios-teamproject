@@ -218,24 +218,37 @@ int cp(DirectoryTree *p_directoryTree, char *command) {
     tmpNode = p_directoryTree->current;
     if (command[0] == '-') {
         if (strcmp(command, "-r") == 0) {
-            str = strtok(NULL, " ");
+            char *directoryName, *copyDirectoryName;
+            str = directoryName = strtok(NULL, " ");
             if (str == NULL) {
                 printf("cp: 잘못된 연산자\n");
                 printf("Try 'cp --help' for more information.\n");
                 return -1;
             }
-            if (strncmp(str, "/", 1) == 0) {
-                p_directoryTree->current = p_directoryTree->root;
+            str = copyDirectoryName = strtok(NULL, " ");
+            str = strtok(NULL, " ");
+
+            if (str != NULL || copyDirectoryName == NULL) {
+                printf("cp: 잘못된 입력 형식\n");
+                printf("Try 'cp --help' for more information.\n");
+                return -1;
             }
-            str = strtok(str, "/");
-            while (str != NULL) {
-                isDirectoryExist = move_current_tree(p_directoryTree, str);
-                if (isDirectoryExist != 0) {
-                    make_new(p_directoryTree, str, 'd', NULL);
-                    move_current_tree(p_directoryTree, str);
-                }
-                str = strtok(NULL, "/");
+            DirectoryNode *directoryNode = is_exist_directory(p_directoryTree, directoryName, 'd');
+            DirectoryNode *copyDirectoryNode = is_exist_directory(p_directoryTree, copyDirectoryName, 'd');
+
+            if (directoryNode == NULL) {
+                printf("cp: %s: 디렉토리는 존재하지 않습니다.\n", directoryName);
+                printf("Try 'cp --help' for more information.\n");
+                return -1;
             }
+            if (copyDirectoryNode) {
+                char tt[MAX_DIRECTORY_SIZE] = "-r ";
+                strcat(tt, copyDirectoryName);
+                char *command = strtok(tt, " ");
+                rm(p_directoryTree, command);
+            }
+            copy_directory(p_directoryTree, directoryNode, copyDirectoryName, 'd', 1);
+
             p_directoryTree->current = tmpNode;
         } else if (strcmp(command, "--help") == 0) {
             printf("사용법: cp [옵션]... 파일/디렉터리...\n");
