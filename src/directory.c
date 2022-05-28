@@ -856,7 +856,18 @@ void find_directory(DirectoryTree *p_directoryTree, char *directoryName, int o) 
 
 void copy_directory(DirectoryTree *p_directoryTree, DirectoryNode *p_directoryNode, char *copyName, char type, int level) {
     DirectoryNode *currentNode = p_directoryTree->current;
-    make_new(p_directoryTree, copyName, type, NULL);
+    DirectoryNode *checkExistNode = is_exist_directory(p_directoryTree, copyName, p_directoryNode->type);
+    if (!checkExistNode || type == 'f') {  // 같은 이름의 파일이 존재하면 파일을 덮어 씌우고, 디렉토리가 존재하면 작업을 하지 않음
+        pthread_t t_command;
+        ThreadArg copyInfo;
+        copyInfo.p_directoryTree = p_directoryTree;
+        copyInfo.command = copyName;
+        copyInfo.additionalValue = "-r";
+        copyInfo.fileNameNode = p_directoryNode;
+        copyInfo.copyPath = NULL;
+        pthread_create(&t_command, NULL, thread_routine_copy, (void *)&copyInfo);
+        pthread_join(t_command, NULL);
+    }
     if (p_directoryNode->LeftChild) {
         move_current_tree(p_directoryTree, copyName);
         copy_directory(p_directoryTree, p_directoryNode->LeftChild, p_directoryNode->LeftChild->name, p_directoryNode->LeftChild->type, level + 1);

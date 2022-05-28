@@ -149,16 +149,17 @@ void *thread_routine_copy(void *arg) {
     char tmp[MAX_DIRECTORY_SIZE];
     int isDirectoryExist;
 
+
     if (copyPath) {  // copyPath가 존재할때
         move_directory_path(p_directoryTree, copyPath);
     }
 
-    if (strcmp(command, fileName) == 0) {  // 복사할 파일이랑 대상이랑 이름이 같으면 종료 (복사 불가)
+    if (strcmp(command, fileName) == 0 && strcmp(command, "-r") != 0) {  // 복사할 파일이랑 대상이랑 이름이 같으면 종료 (복사 불가)
         printf("cp: '%s': 이미 존재하는 파일 이름 입니다.\n", fileName);
     } else {
         DirectoryNode *checkOverlap = p_directoryTree->current->LeftChild;
         while (checkOverlap != NULL) {
-            if (strcmp(checkOverlap->name, command) == 0 && checkOverlap->type == 'f') {
+            if (strcmp(checkOverlap->name, command) == 0 && checkOverlap->type == fileNameNode->type) {
                 break;
             }
             checkOverlap = checkOverlap->RightSibling;
@@ -191,7 +192,7 @@ void *thread_routine_copy(void *arg) {
         NewNode->hour = today->tm_hour;
         NewNode->minute = today->tm_min;
         NewNode->Parent = p_directoryTree->current;
-        NewNode->type = 'f';
+        NewNode->type = fileNameNode->type;
 
         if (p_directoryTree->current->LeftChild == NULL) {
             p_directoryTree->current->LeftChild = NewNode;

@@ -241,12 +241,12 @@ int cp(DirectoryTree *p_directoryTree, char *command) {
                 printf("Try 'cp --help' for more information.\n");
                 return -1;
             }
-            if (copyDirectoryNode) {
-                char tt[MAX_DIRECTORY_SIZE] = "-r ";
-                strcat(tt, copyDirectoryName);
-                char *command = strtok(tt, " ");
-                rm(p_directoryTree, command);
-            }
+            // if (copyDirectoryNode) {
+            //     char tt[MAX_DIRECTORY_SIZE] = "-r ";
+            //     strcat(tt, copyDirectoryName);
+            //     char *command = strtok(tt, " ");
+            //     rm(p_directoryTree, command);
+            // }
             copy_directory(p_directoryTree, directoryNode, copyDirectoryName, 'd', 1);
 
             p_directoryTree->current = tmpNode;
