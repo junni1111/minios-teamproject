@@ -43,11 +43,11 @@ void *thread_routine_make_directory(void *arg) {
                 if (isDirectoryExist == -1) {
                     make_new(p_directoryTree, directoryName, 'd', NULL);
                     isDirectoryExist = move_current_tree(p_directoryTree, directoryName);
-                    printf("%d, %s, %s \n", isDirectoryExist, pStr, p_directoryTree->current->name);
                 }
                 directoryNameLength = 0;
             }
         }
+        directoryName[directoryNameLength] = 0;
         make_new(p_directoryTree, directoryName, 'd', NULL);
         p_directoryTree->current = tmpNode;
     } else {
@@ -148,7 +148,6 @@ void *thread_routine_copy(void *arg) {
     DirectoryNode *fileNameNode = p_threadArg->fileNameNode;
     char tmp[MAX_DIRECTORY_SIZE];
     int isDirectoryExist;
-
 
     if (copyPath) {  // copyPath가 존재할때
         move_directory_path(p_directoryTree, copyPath);

@@ -31,6 +31,7 @@ int mkdir(DirectoryTree *p_directoryTree, char *command) {
             }
 
             while (str != NULL) {
+                printf("%s : str\n", str);
                 p_threadArg[t_count].p_directoryTree = p_directoryTree;
                 p_threadArg[t_count].additionalValue = ".";
                 p_threadArg[t_count++].command = str;
@@ -241,12 +242,7 @@ int cp(DirectoryTree *p_directoryTree, char *command) {
                 printf("Try 'cp --help' for more information.\n");
                 return -1;
             }
-            // if (copyDirectoryNode) {
-            //     char tt[MAX_DIRECTORY_SIZE] = "-r ";
-            //     strcat(tt, copyDirectoryName);
-            //     char *command = strtok(tt, " ");
-            //     rm(p_directoryTree, command);
-            // }
+
             copy_directory(p_directoryTree, directoryNode, copyDirectoryName, 'd', 1);
 
             p_directoryTree->current = tmpNode;
@@ -499,7 +495,7 @@ int rm(DirectoryTree *p_directoryTree, char *command) {
             tmpNode = is_exist_directory(p_directoryTree, command, 'f');
             tmpNode2 = is_exist_directory(p_directoryTree, command, 'd');
 
-            if (tmpNode2 != NULL) {
+            if (tmpNode == NULL && tmpNode2 != NULL) {
                 printf("rm:'%s'를 지울 수 없음: 디렉터리입니다\n", command);
                 return -1;
             }
@@ -589,13 +585,11 @@ int cd(DirectoryTree *p_directoryTree, char *command) {
                 return -1;
             }
         }
-        tmpNode = is_exist_directory(p_directoryTree, command, 'f');
-        if (tmpNode != NULL) {
+        if (tmpNode == NULL && is_exist_directory(p_directoryTree, command, 'f') != NULL) {
             printf("-bash: cd: '%s': 디렉터리가 아닙니다\n", command);
             return -1;
         }
-        isDirectoryExist = move_directory_path(p_directoryTree, command);
-        if (isDirectoryExist != 0)
+        if (move_directory_path(p_directoryTree, command) != 0)
             printf("-bash: cd: '%s': 그런 파일이나 디렉터리가 없습니다\n", command);
     }
     return 0;
