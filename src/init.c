@@ -79,7 +79,7 @@ void print_start() {
 
     BOLD;
     BLUE;
-    printf("Welcome to miniOS 1.0.0\n\n");
+    printf("Welcome to miniOneS 1.0.0\n\n");
     printf("2022 1st semester OS team project\n");
     printf("팀장 : 조연준\n");
     printf("팀원 : 서호준, 윤덕우, 강채은, 조규용\n");
@@ -103,7 +103,7 @@ void print_head(DirectoryTree *p_directoryTree, Stack *p_directoryStack) {
 
     BOLD;
     GREEN;
-    printf("%s@miniOS", gp_userList->current->name);
+    printf("%s@miniOneS", gp_userList->current->name);
     DEFAULT;
     printf(":");
     tmpNode = p_directoryTree->current;

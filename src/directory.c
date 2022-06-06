@@ -452,6 +452,31 @@ int print_directory_path(DirectoryTree *p_directoryTree, Stack *p_directoryStack
     return 0;
 }
 
+void save_directory_path(DirectoryTree *p_directoryTree, Stack *p_directoryStack) {
+    // variables
+    DirectoryNode *tmpNode = NULL;
+    strncpy(gPath, "", MAX_DIRECTORY_SIZE);
+
+    tmpNode = p_directoryTree->current;
+
+    // if current directory is root
+    if (tmpNode == p_directoryTree->root) {
+        strcat(gPath, "/");
+    } else {
+        // until current directory is root, repeat Push
+        while (tmpNode->Parent != NULL) {
+            push(p_directoryStack, tmpNode->name);
+            tmpNode = tmpNode->Parent;
+        }
+        // until stack is empty, repeat Pop
+        while (is_empty(p_directoryStack) == 0) {
+            strcat(gPath, "/");
+            char *tmp = pop(p_directoryStack);
+            strcat(gPath, tmp);
+        }
+    }
+}
+
 // ls
 int list_directory(DirectoryTree *p_directoryTree, int a, int l) {
     // variables
@@ -680,6 +705,7 @@ int concatenate(DirectoryTree *p_directoryTree, char *fName, int o) {
             tmpSIZE += strlen(buf) - 1;
         }
 
+        rewind(stdin);
         fclose(fp);
 
         tmpNode = is_exist_directory(p_directoryTree, fName, 'f');
@@ -809,13 +835,14 @@ int read_directory(DirectoryTree *p_directoryTree, char *tmp, char *directoryNam
     char *str;
     char str2[MAX_NAME_SIZE];
     if (o == 0) {
+        save_directory_path(p_directoryTree, gp_directoryStack);
         str = strtok(tmp, " ");
         strcpy(str2, str);
         for (int i = 0; i < 10; i++) {
             str = strtok(NULL, " ");
         }
         if (str != NULL) {
-            if (strstr(str2, directoryName) != NULL) {
+            if (strstr(str2, directoryName) != NULL && strstr(str, gPath) != NULL) {
                 str[strlen(str) - 1] = '\0';
                 if (strcmp(str, "/") == 0)
                     printf("/%s\n", str2);

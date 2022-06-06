@@ -15,6 +15,10 @@ int main() {
     save_user_list(gp_userList);
 
     while (1) {
+        if (feof(stdin)) {
+            rewind(stdin);
+            printf("\n");
+        }
         print_head(gp_directoryTree, gp_directoryStack);
         fgets(command, sizeof(command), stdin);
         command[strlen(command) - 1] = '\0';

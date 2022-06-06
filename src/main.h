@@ -84,6 +84,9 @@ typedef struct tagThread {
     DirectoryNode *fileNameNode;
 } ThreadArg;
 
+// path
+char gPath[MAX_DIRECTORY_SIZE];
+
 // time
 time_t ltime;
 struct tm *today;
@@ -133,6 +136,7 @@ int move_current_tree(DirectoryTree *p_directoryTree, char *directoryPath);
 int move_directory_path(DirectoryTree *p_directoryTree, char *directoryPath);
 // pwd
 int print_directory_path(DirectoryTree *p_directoryTree, Stack *p_directoryStack);
+void save_directory_path(DirectoryTree *p_directoryTree, Stack *p_directoryStack);
 // ls
 int list_directory(DirectoryTree *p_directoryTree, int a, int l);
 // cat
