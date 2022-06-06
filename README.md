@@ -6,6 +6,4 @@ build : make
 
 clean : make clean
 
-clean<except OS> : make obj
-
 run : make run
